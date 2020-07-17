@@ -130,3 +130,6 @@ dmypy.json
 
 # Json
 *.json
+
+# Run File
+temp
