@@ -22,6 +22,10 @@ def safe_mkdir(dir_name):
 def init():
     safe_mkdir("temp")
     safe_mkdir("Downloads")
+    print("启动成功！")
+    print("ABookDownloader是由HEIGE-PCloud编写的开源Abook下载软件")
+    print("如果遇到任何问题，请通过https://github.com/HEIGE-PCloud/ABookDownloader 提交issue")
+    print("如果这款软件帮到了您，欢迎请作者喝奶茶QwQ")
 
 def file_window():
     tk = tkinter.Tk()
