@@ -1,16 +1,44 @@
+import os
 import json
+import tkinter
+import tkinter.filedialog
 import getpass
 import requests
 
 session = requests.session()
 
-COURSES_INFO_FILE = "course_info.json"
-DOWNLOAD_LINK = "download_link.json"
-USER_INFO = "user_info.json"
+COURSES_INFO_FILE = ".\\temp\\course_info.json"
+DOWNLOAD_LINK = ".\\temp\\download_link.json"
+USER_INFO = ".\\temp\\user_info.json"
 courses_list = []
 chapter_list = []
 
-def downloader():
+def safe_mkdir(dir_name):
+    try:
+        os.mkdir(str(dir_name))
+    except FileExistsError:
+        pass
+
+def init():
+    safe_mkdir("temp")
+    safe_mkdir("Downloads")
+
+def file_window():
+    tk = tkinter.Tk()
+    tk.title("Choose the saving path")
+    path = tkinter.StringVar()
+    def selectPath():
+        file_path = tkinter.filedialog.askdirectory()
+        path.set(file_path)
+    tkinter.Label(tk,text = "Saving Path").grid(row = 0, column = 0)
+    tkinter.Entry(tk, textvariable = path).grid(row = 0, column = 1)
+    tkinter.Button(tk, text = "Select", command = selectPath).grid(row = 0, column = 2)
+
+
+
+def downloader(selected_course, selected_chapter):
+    safe_mkdir(".\\Downloads\\" + selected_course['course_title'])
+    safe_mkdir(".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['chapter_name'])
     download_url_base = "http://abook.hep.com.cn/ICourseFiles/"
     with open(DOWNLOAD_LINK, 'r', encoding='utf-8') as courses_info:
         download_data: list = json.load(courses_info)[0]['myMobileResourceList']
@@ -23,10 +51,11 @@ def downloader():
         print(url)
         file_type = file_url[str(file_url).find('.'):]
         r = requests.get(url)
-        location =  str(file_name) + str(file_type)
+        location = ".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['chapter_name'] + "\\" + str(file_name) + str(file_type)
         print(location)
         with open(location, "wb") as f:
             f.write(r.content)
+    os.system("explorer .\\Downloads\\")
 
 def Abook_login(login_name, login_password):
     login_url = "http://abook.hep.com.cn/loginMobile.action"
@@ -56,7 +85,7 @@ def load_courses_info():
 
 def get_chapter_info(course_id):
     course_url = 'http://abook.hep.com.cn/resourceStructure.action?courseInfoId={}'.format(course_id)
-    with open(str(course_id) + '.json', 'w', encoding='utf-8') as file:
+    with open(".\\temp\\" + str(course_id) + '.json', 'w', encoding='utf-8') as file:
         json.dump(session.post(course_url).json(), file, ensure_ascii=False, indent=4)
 
 def display_courses_info():
@@ -64,7 +93,7 @@ def display_courses_info():
         print(i + 1, courses_list[i]['course_title'])
 
 def load_chapter_info(course_id):
-    with open(str(course_id) + '.json', 'r', encoding='utf-8') as chapter_info:
+    with open(".\\temp\\" + str(course_id) + '.json', 'r', encoding='utf-8') as chapter_info:
         chapter_data: list = json.load(chapter_info)
     for chapter in chapter_data:
         chapter_list.append({'chapter_id': chapter['id'], 'chapter_name': chapter['name']})
@@ -94,6 +123,7 @@ def write_login_info(login_name, login_password):
         json.dump({'login_name': login_name, 'login_password': login_password}, file, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
+    init()
     ### First check if there is user information stored locally.
     ###     If there is, then ask whether the user will use it or not.
     ###     If there isn't, ask user type in information directly.
@@ -118,18 +148,18 @@ if __name__ == "__main__":
     display_courses_info()
 
     choice = int(input("Enter course index to choose: "))
-    selected_course_id = courses_list[choice - 1]['course_id']
+    selected_course = courses_list[choice - 1]
 
     ### Get and load chapter information
-    get_chapter_info(selected_course_id)
-    load_chapter_info(selected_course_id)
+    get_chapter_info(selected_course['course_id'])
+    load_chapter_info(selected_course['course_id'])
 
     display_chapter_info()
     
     choice = int(input("Enter chapter index to choose: "))
-    selected_chapter_id = chapter_list[choice - 1]['chapter_id']
+    selected_chapter = chapter_list[choice - 1]
     
     ### Fetch the download links
-    get_download_link(selected_course_id, selected_chapter_id)
+    get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
     ### Download the links
-    downloader()
+    downloader(selected_course, selected_chapter)
