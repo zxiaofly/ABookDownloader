@@ -57,7 +57,8 @@ def load_courses_info():
             course_id = eval('courses_data[{}]'.format(i))['courseInfoId']
             courses_list.append({'course_id': course_id, 'course_title': course_title})
 
-def get_course_info(course_id):
+    ### Get and load chapter information
+def get_chapter_info(course_id):
     course_url = 'http://abook.hep.com.cn/resourceStructure.action?courseInfoId={}'.format(course_id)
     with open(str(course_id) + '.json', 'w', encoding='utf-8') as file:
         json.dump(session.post(course_url).json(), file, ensure_ascii=False, indent=4)
@@ -114,15 +115,25 @@ if __name__ == "__main__":
     ### User login
     Abook_login(user_info['login_name'], user_info['login_password'])
 
+    ### Get and load courses infomation
     get_courses_info()
     load_courses_info()
+    
     display_courses_info()
+
     choice = int(input("Enter course index to choose: "))
     selected_course_id = courses_list[choice - 1]['course_id']
-    get_course_info(selected_course_id)
-    load_chapter_info(5000003220)
+
+    ### Get and load chapter information
+    get_chapter_info(selected_course_id)
+    load_chapter_info(selected_course_id)
+
     display_chapter_info()
-    choice = int(input("Enter the chapter to choose: "))
+    
+    choice = int(input("Enter chapter index to choose: "))
     selected_chapter_id = chapter_list[choice - 1]['chapter_id']
+    
+    ### Fetch the download links
     get_download_link(selected_course_id, selected_chapter_id)
+    ### Download the links
     downloader()
