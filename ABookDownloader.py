@@ -24,8 +24,10 @@ def init():
     safe_mkdir("Downloads")
     print("启动成功！")
     print("ABookDownloader是由HEIGE-PCloud编写的开源Abook下载软件")
-    print("如果遇到任何问题，请通过https://github.com/HEIGE-PCloud/ABookDownloader 提交issue")
-    print("如果这款软件帮到了您，欢迎请作者喝奶茶QwQ")
+    print("项目主页 https://github.com/HEIGE-PCloud/ABookDownloader")
+    print("如果遇到任何问题，欢迎提交issue")
+    print("如果这款软件帮到了您，欢迎前往该项目主页请作者喝奶茶QwQ")
+    print("<===================================================>")
 
 def file_window():
     tk = tkinter.Tk()
@@ -185,7 +187,11 @@ if __name__ == "__main__":
                     get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
                     downloader(selected_course, selected_chapter)
         else:
-            selected_course = courses_list[choice - 1]
+            try:
+                selected_course = courses_list[choice - 1]
+            except IndexError:
+                print("Wrong Index!")
+                continue
             ### Get and load chapter information
             get_chapter_info(selected_course['course_id'])
             load_chapter_info(selected_course['course_id'])
@@ -201,7 +207,10 @@ if __name__ == "__main__":
                     get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
                     downloader(selected_course, selected_chapter)
             else:
-                selected_chapter = chapter_list[choice - 1]
+                try:
+                    selected_chapter = chapter_list[choice - 1]
+                except IndexError:
+                    print("Wrong Index!")
                 ### Fetch the download links
                 get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
                 ### Download the links
