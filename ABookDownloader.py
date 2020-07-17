@@ -75,6 +75,8 @@ def get_courses_info():
     print("Courses fetched!")
 
 def load_courses_info():
+    global courses_list
+    courses_list = []
     with open(COURSES_INFO_FILE, 'r', encoding='utf-8') as courses_info:
         courses_data: list = json.load(courses_info)[0]['myMobileCourseList']
         print('There are {} course(s) availaible.'.format(len(courses_data)))
@@ -92,17 +94,23 @@ def display_courses_info():
     print("0 下载全部")
     for i in range(len(courses_list)):
         print(i + 1, courses_list[i]['course_title'])
+    print("o 打开下载文件夹")
+    print("q 退出")
 
 def load_chapter_info(course_id):
+    global chapter_list
+    chapter_list = []
     with open(".\\temp\\" + str(course_id) + '.json', 'r', encoding='utf-8') as chapter_info:
         chapter_data: list = json.load(chapter_info)
     for chapter in chapter_data:
         chapter_list.append({'chapter_id': chapter['id'], 'chapter_name': chapter['name']})
 
-def display_chapter_info():
+def display_chapter_info(selected_course):
+    print("> " + selected_course['course_title'] + ":")
     print("0 下载全部")
     for i in range(len(chapter_list)):
         print(i + 1, chapter_list[i]['chapter_name'])
+    print("q 返回上一级")
 
 def get_download_link(course_id, chapter_id):
     download_link_url = "http://abook.hep.com.cn/courseResourceList.action?courseInfoId={}&treeId={}&cur=1".format(course_id, chapter_id)
@@ -146,39 +154,51 @@ if __name__ == "__main__":
     ### Get and load courses infomation
     get_courses_info()
     load_courses_info()
-    
-    display_courses_info()
 
-    choice = int(input("Enter course index to choose: "))
-    if choice == 0:
-        for i in range(len(courses_list)):
-            selected_course = courses_list[i]
+    while True:
+        display_courses_info()
+
+        
+        choice = input("Enter course index to choose: ")
+        try:
+            choice = int(choice)
+        except ValueError:
+            if choice == 'o':
+                os.system("explorer .\\Downloads\\")
+                continue
+            else:
+                print("Bye~")
+            break
+
+        ### Download All!
+        if choice == 0:
+            for i in range(len(courses_list)):
+                selected_course = courses_list[i]
+                get_chapter_info(selected_course['course_id'])
+                load_chapter_info(selected_course['course_id'])
+                for i in range(len(chapter_list)):
+                    selected_chapter = chapter_list[i]
+                    get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
+                    downloader(selected_course, selected_chapter)
+        else:
+            selected_course = courses_list[choice - 1]
+            ### Get and load chapter information
             get_chapter_info(selected_course['course_id'])
             load_chapter_info(selected_course['course_id'])
-            for i in range(len(chapter_list)):
-                selected_chapter = chapter_list[i]
-                get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
-                downloader(selected_course, selected_chapter)
-        os.system("explorer .\\Downloads\\")
-    else:
-        selected_course = courses_list[choice - 1]
-        ### Get and load chapter information
-        get_chapter_info(selected_course['course_id'])
-        load_chapter_info(selected_course['course_id'])
 
-        display_chapter_info()
-        
-        choice = int(input("Enter chapter index to choose: "))
-        if choice == 0:
-            for i in range(len(chapter_list)):
-                selected_chapter = chapter_list[i]
+            display_chapter_info(selected_course)
+            try:
+                choice = int(input("Enter chapter index to choose: "))
+            except ValueError:
+                continue
+            if choice == 0:
+                for i in range(len(chapter_list)):
+                    selected_chapter = chapter_list[i]
+                    get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
+                    downloader(selected_course, selected_chapter)
+            else:
+                selected_chapter = chapter_list[choice - 1]
+                ### Fetch the download links
                 get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
+                ### Download the links
                 downloader(selected_course, selected_chapter)
-            os.system("explorer .\\Downloads\\")
-        else:
-            selected_chapter = chapter_list[choice - 1]
-            ### Fetch the download links
-            get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
-            ### Download the links
-            downloader(selected_course, selected_chapter)
-            os.system("explorer .\\Downloads\\")
