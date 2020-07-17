@@ -1,10 +1,12 @@
 import json
+import getpass
 import requests
 
 session = requests.session()
 
 COURSES_INFO_FILE = "course_info.json"
 DOWNLOAD_LINK = "download_link.json"
+USER_INFO = "user_info.json"
 courses_list = []
 chapter_list = []
 
@@ -21,9 +23,9 @@ def downloader():
         print(url)
         file_type = file_url[str(file_url).find('.'):]
         r = requests.get(url)
-        location = "~\\Downloads\\" + str(file_name) + str(file_type)
+        location =  str(file_name) + str(file_type)
         print(location)
-        with open(str(file_name) + str(file_type),"wb") as f:
+        with open(location, "wb") as f:
             f.write(r.content)
 
 def Abook_login(loginName, loginPassword):
@@ -79,19 +81,48 @@ def get_download_link(course_id, chapter_id):
     with open(DOWNLOAD_LINK, 'w', encoding='utf-8') as file:
         json.dump(session.get(download_link_url).json(), file, ensure_ascii=False, indent=4)
 
+def read_login_info():
+    try:
+        with open(USER_INFO, 'r', encoding='utf-8') as file:
+            try:
+                login_info: list = json.load(file)
+                return login_info
+            except json.decoder.JSONDecodeError:
+                return False
+    except FileNotFoundError:
+        return False
+
+def write_login_info(login_name, login_password):
+    with open(USER_INFO, 'w', encoding='utf-8') as file:
+        json.dump({'login_name': login_name, 'login_password': login_password}, file, ensure_ascii=False, indent=4)
+
 if __name__ == "__main__":
-    # loginName = input("Please input loginName: ")
-    # loginPassword = input("Please input loginPassword: ")
-    # Abook_login(loginName, loginPassword)
-    # get_courses_info()
-    # load_courses_info()
-    # display_courses_info()
-    # choice = int(input("Enter course index to choose: "))
-    # selected_course_id = courses_list[choice - 1]['course_id']
-    # get_course_info(selected_course_id)
-    # load_chapter_info(5000003220)
-    # display_chapter_info()
-    # choice = int(input("Enter the chapter to choose: "))
-    # selected_chapter_id = chapter_list[choice - 1]['chapter_id']
-    # get_download_link(selected_course_id, selected_chapter_id)
+    ### First check if there is user information stored locally.
+    ###     If there is, then ask whether the user will use it or not.
+    ###     If there isn't, ask user type in information directly.
+    user_info = read_login_info()
+    if user_info != False:
+        choice = input("User {} founded! Do you want to log in as {}? (y/n) ".format(user_info['login_name'], user_info['login_name']))
+        if choice == 'n':
+            user_info = False
+    if user_info == False:
+        login_name = input("Please input login name: ")
+        login_password = getpass.getpass("Please input login password: ")
+        user_info = {'login_name': login_name, 'login_password': login_password}
+        write_login_info(login_name, login_password)
+
+    ### User login
+    Abook_login(user_info['login_name'], user_info['login_password'])
+
+    get_courses_info()
+    load_courses_info()
+    display_courses_info()
+    choice = int(input("Enter course index to choose: "))
+    selected_course_id = courses_list[choice - 1]['course_id']
+    get_course_info(selected_course_id)
+    load_chapter_info(5000003220)
+    display_chapter_info()
+    choice = int(input("Enter the chapter to choose: "))
+    selected_chapter_id = chapter_list[choice - 1]['chapter_id']
+    get_download_link(selected_course_id, selected_chapter_id)
     downloader()
