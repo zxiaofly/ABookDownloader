@@ -1,7 +1,6 @@
 import os
 import json
-import tkinter
-import tkinter.filedialog
+import time
 import getpass
 import requests
 
@@ -30,20 +29,28 @@ def init():
     print("如果这款软件帮到了您，欢迎前往该项目主页请作者喝奶茶QwQ")
     print("<========================================================>")
 
-def file_window():
-    tk = tkinter.Tk()
-    tk.title("Choose the saving path")
-    path = tkinter.StringVar()
-    def selectPath():
-        file_path = tkinter.filedialog.askdirectory()
-        path.set(file_path)
-    tkinter.Label(tk,text = "Saving Path").grid(row = 0, column = 0)
-    tkinter.Entry(tk, textvariable = path).grid(row = 0, column = 1)
-    tkinter.Button(tk, text = "Select", command = selectPath).grid(row = 0, column = 2)
+def file_downloader(file_name, url):
+    headers = {'Proxy-Connection':'keep-alive'}
+    r = requests.get(url, stream=True, headers=headers)
+    content_length = float(r.headers['content-length'])
+    with open(file_name, 'wb') as file:
+        downloaded_length = 0
+        last_downloaded_length = 0
+        time_start = time.time()
+        for chunk in r.iter_content(chunk_size = 512):
+            if chunk:
+                file.write(chunk)
+                downloaded_length += len(chunk)
+                if time.time() - time_start > 1:
+                    percentage = downloaded_length / content_length * 100
+                    speed = (downloaded_length - last_downloaded_length) / 2097152
+                    last_downloaded_length = downloaded_length
+                    print("\r Downloading: " + file_name + ': ' + '{:.2f}'.format(percentage) + '% Speed: ' + '{:.2f}'.format(speed) + 'MB/S', end="")
+                    time_start = time.time()
+    print("\nDownload {} successfully!".format(file_name))
 
 
-
-def downloader(selected_course, selected_chapter):
+def download_course(selected_course, selected_chapter):
     safe_mkdir(".\\Downloads\\" + selected_course['course_title'])
     safe_mkdir(".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['chapter_name'])
     download_url_base = "http://abook.hep.com.cn/ICourseFiles/"
@@ -57,11 +64,8 @@ def downloader(selected_course, selected_chapter):
         url = download_url_base + file_url
         print(url)
         file_type = file_url[str(file_url).find('.'):]
-        r = requests.get(url)
         location = ".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['chapter_name'] + "\\" + str(file_name) + str(file_type)
-        print(location)
-        with open(location, "wb") as f:
-            f.write(r.content)
+        file_downloader(location, url)
 
 def Abook_login(login_name, login_password):
     login_url = "http://abook.hep.com.cn/loginMobile.action"
@@ -186,7 +190,7 @@ if __name__ == "__main__":
                 for i in range(len(chapter_list)):
                     selected_chapter = chapter_list[i]
                     get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
-                    downloader(selected_course, selected_chapter)
+                    download_course(selected_course, selected_chapter)
         else:
             try:
                 selected_course = courses_list[choice - 1]
@@ -206,7 +210,7 @@ if __name__ == "__main__":
                 for i in range(len(chapter_list)):
                     selected_chapter = chapter_list[i]
                     get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
-                    downloader(selected_course, selected_chapter)
+                    download_course(selected_course, selected_chapter)
             else:
                 try:
                     selected_chapter = chapter_list[choice - 1]
@@ -215,4 +219,4 @@ if __name__ == "__main__":
                 ### Fetch the download links
                 get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
                 ### Download the links
-                downloader(selected_course, selected_chapter)
+                download_course(selected_course, selected_chapter)
