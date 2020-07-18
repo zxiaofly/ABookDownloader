@@ -4,7 +4,9 @@
 
 ## 如何使用？
 
-[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0/ABookDownloaderV1.0.zip)
+[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0.1/ABookDownloaderV1.0.1.zip)
+
+[备用地址](https://onedrive.gimhoy.com/1drv/aHR0cHM6Ly8xZHJ2Lm1zL3UvcyFBdFRLUzh6ZVEyU1NrSXNyMThfN2N2b2pSVnZ6Vnc/ZT1EQmZQdlc=..zip)
 
 下载完成后解压缩
 
