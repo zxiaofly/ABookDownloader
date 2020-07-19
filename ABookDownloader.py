@@ -214,9 +214,9 @@ if __name__ == "__main__":
             else:
                 try:
                     selected_chapter = chapter_list[choice - 1]
+                    ### Fetch the download links
+                    get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
+                    ### Download the links
+                    download_course(selected_course, selected_chapter)
                 except IndexError:
                     print("Wrong Index!")
-                ### Fetch the download links
-                get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
-                ### Download the links
-                download_course(selected_course, selected_chapter)
