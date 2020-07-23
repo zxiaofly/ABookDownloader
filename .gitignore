@@ -133,3 +133,6 @@ dmypy.json
 
 # Run File
 temp
+
+# VSCode workspace
+*.code-workspace
