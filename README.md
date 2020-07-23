@@ -4,9 +4,9 @@
 
 ## 如何使用？
 
-[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0.1/ABookDownloaderV1.0.1.zip)
+[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0.2/ABookDownloaderV1.0.2.zip)
 
-[备用地址](https://onedrive.gimhoy.com/1drv/aHR0cHM6Ly8xZHJ2Lm1zL3UvcyFBdFRLUzh6ZVEyU1NrSXNyMThfN2N2b2pSVnZ6Vnc/ZT1EQmZQdlc=..zip)
+[备用地址](https://onedrive.gimhoy.com/1drv/aHR0cHM6Ly8xZHJ2Lm1zL3UvcyFBdFRLUzh6ZVEyU1NrT2h6c3Q1c1ljMXZqUDdldlE/ZT1pSmZ0aEY=..zip)
 
 下载完成后解压缩
 
@@ -26,11 +26,11 @@
 
 **在输入密码时不会显示密码，也不会显示`*`一类的占位符。**
 
-**但只需要照常正确输入密码即可正常使用。**
+**但只需要照常正确输入密码即可使用。**
 
 ## 1.0.2版本更新
 
-修复了带有子目录的课程资源的现实与下载问题。
+修复了带有子目录的课程资源的显示与下载问题。
 
 优化了登录流程。
 
