@@ -19,6 +19,12 @@ def safe_mkdir(dir_name):
     except FileExistsError:
         pass
 
+def safe_remove(dir_name):
+    try:
+        os.remove(str(dir_name))
+    except FileNotFoundError:
+        pass
+
 def init():
     safe_mkdir("temp")
     safe_mkdir("Downloads")
@@ -85,9 +91,11 @@ def Abook_login(login_name, login_password):
     session.post(url=login_url, data=login_data, headers=headers)
     if session.post(login_status_url).json()["message"] == "已登录":
         print("Successfully login in!")
+        return True
     else:
         print("Login failed, please try again.")
-        os.remove(".\\temp\\user_info.json")
+        safe_remove(".\\temp\\user_info.json")
+        return False
 
 def get_courses_info():
     course_info_url = "http://abook.hep.com.cn/selectMyCourseList.action?mobile=true&cur=1"
@@ -190,7 +198,14 @@ if __name__ == "__main__":
         write_login_info(login_name, login_password)
 
     ### User login
-    Abook_login(user_info['login_name'], user_info['login_password'])
+    while True:
+        if Abook_login(user_info['login_name'], user_info['login_password']):
+            break
+        login_name = input("Please input login name: ")
+        login_password = getpass.getpass("Please input login password: ")
+        user_info = {'login_name': login_name, 'login_password': login_password}
+        write_login_info(login_name, login_password)
+        
 
     ### Get and load courses infomation
     get_courses_info()
