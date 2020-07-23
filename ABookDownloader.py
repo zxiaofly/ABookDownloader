@@ -11,6 +11,7 @@ DOWNLOAD_LINK = ".\\temp\\download_link.json"
 USER_INFO = ".\\temp\\user_info.json"
 courses_list = []
 chapter_list = []
+download_info = []
 
 def safe_mkdir(dir_name):
     try:
@@ -23,7 +24,7 @@ def init():
     safe_mkdir("Downloads")
     print("启动成功！")
     print("ABookDownloader是由HEIGE-PCloud编写的开源Abook下载软件")
-    print("当前版本 1.0.1 可前往项目主页检查更新")
+    print("当前版本 1.0.2 可前往项目主页检查更新")
     print("项目主页 https://github.com/HEIGE-PCloud/ABookDownloader")
     print("如果遇到任何问题，欢迎提交issue")
     print("如果这款软件帮到了您，欢迎前往该项目主页请作者喝奶茶QwQ")
@@ -52,20 +53,29 @@ def file_downloader(file_name, url):
 
 def download_course(selected_course, selected_chapter):
     safe_mkdir(".\\Downloads\\" + selected_course['course_title'])
-    safe_mkdir(".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['chapter_name'])
+    safe_mkdir(".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['name'])
     download_url_base = "http://abook.hep.com.cn/ICourseFiles/"
     with open(DOWNLOAD_LINK, 'r', encoding='utf-8') as courses_info:
-        download_data: list = json.load(courses_info)[0]['myMobileResourceList']
-    print(len(download_data), "downloadable items found!")
-    for i in range(len(download_data)):
-        file_name = download_data[i]['resTitle']
-        file_url = download_data[i]['resFileUrl']
-        print(file_name)
-        url = download_url_base + file_url
-        print(url)
-        file_type = file_url[str(file_url).find('.'):]
-        location = ".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['chapter_name'] + "\\" + str(file_name) + str(file_type)
-        file_downloader(location, url)
+        try:
+            download_data: list = json.load(courses_info)
+        except KeyError:
+            print("No content. Skipped")
+    for course in download_data:
+        if "myMobileResourceList" not in course:
+            continue
+        course = course['myMobileResourceList']
+        print(len(course), "downloadable items found!")
+        for i in range(len(course)):
+            file_name = course[i]['resTitle']
+            file_url = course[i]['resFileUrl']
+            print(file_name)
+            url = download_url_base + file_url
+            print(url)
+            file_type = file_url[str(file_url).find('.'):]
+            location = ".\\Downloads\\" + selected_course['course_title'] + "\\" + selected_chapter['name'] + "\\" + str(file_name) + str(file_type)
+            file_downloader(location, url)
+    global download_info
+    download_info = []
 
 def Abook_login(login_name, login_password):
     login_url = "http://abook.hep.com.cn/loginMobile.action"
@@ -113,20 +123,40 @@ def load_chapter_info(course_id):
     chapter_list = []
     with open(".\\temp\\" + str(course_id) + '.json', 'r', encoding='utf-8') as chapter_info:
         chapter_data: list = json.load(chapter_info)
+    remove_list = []
     for chapter in chapter_data:
-        chapter_list.append({'chapter_id': chapter['id'], 'chapter_name': chapter['name']})
+        if chapter["type"] == 5:
+            for child_chapter in chapter_data:
+                if child_chapter["pId"] == chapter["id"]:
+                    remove_list.append(child_chapter)
+                    if 'child' not in chapter:
+                        chapter["child"] = []
+                    chapter["child"].append(child_chapter)
+
+    for chapter in remove_list:
+        chapter_data.remove(chapter)
+    chapter_list = chapter_data
 
 def display_chapter_info(selected_course):
     print("> " + selected_course['course_title'] + ":")
     print("0 下载全部")
     for i in range(len(chapter_list)):
-        print(i + 1, chapter_list[i]['chapter_name'])
+        print(i + 1, chapter_list[i]['name'])
+        if 'child' in chapter_list[i]:
+            for child_chapter in chapter_list[i]['child']:
+                print(" - " + child_chapter['name'])
     print("q 返回上一级")
 
-def get_download_link(course_id, chapter_id):
-    download_link_url = "http://abook.hep.com.cn/courseResourceList.action?courseInfoId={}&treeId={}&cur=1".format(course_id, chapter_id)
+def get_download_link(selected_course, selected_chapter):
+    global download_info
+    if 'child' in selected_chapter:
+        for chapter in selected_chapter['child']:
+            get_download_link(selected_course, chapter)
+    download_link_url = "http://abook.hep.com.cn/courseResourceList.action?courseInfoId={}&treeId={}&cur=1".format(selected_course['course_id'], selected_chapter['id'])
+    info = session.get(download_link_url).json()[0]
+    download_info.append(info)
     with open(DOWNLOAD_LINK, 'w', encoding='utf-8') as file:
-        json.dump(session.get(download_link_url).json(), file, ensure_ascii=False, indent=4)
+        json.dump(download_info, file, ensure_ascii=False, indent=4)
 
 def read_login_info():
     try:
@@ -189,7 +219,7 @@ if __name__ == "__main__":
                 load_chapter_info(selected_course['course_id'])
                 for i in range(len(chapter_list)):
                     selected_chapter = chapter_list[i]
-                    get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
+                    get_download_link(selected_course, selected_chapter)
                     download_course(selected_course, selected_chapter)
         else:
             try:
@@ -209,13 +239,13 @@ if __name__ == "__main__":
             if choice == 0:
                 for i in range(len(chapter_list)):
                     selected_chapter = chapter_list[i]
-                    get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
+                    get_download_link(selected_course, selected_chapter)
                     download_course(selected_course, selected_chapter)
             else:
                 try:
                     selected_chapter = chapter_list[choice - 1]
                     ### Fetch the download links
-                    get_download_link(selected_course['course_id'], selected_chapter['chapter_id'])
+                    get_download_link(selected_course, selected_chapter)
                     ### Download the links
                     download_course(selected_course, selected_chapter)
                 except IndexError:
