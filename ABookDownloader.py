@@ -25,6 +25,15 @@ def safe_remove(dir_name):
     except FileNotFoundError:
         pass
 
+def validate_file_name(file_name):
+    current_time = str(time.strftime("%Y-%m-%d/%H.%M.%S", time.localtime()))
+    key_word = ['\\', '/', ':', '*', '?', '"', '<', '>', '|']
+    file_name = str(file_name)
+    for word in key_word:
+        file_name = file_name.replace(word, '')
+    file_name = file_name + " Renamed: " + current_time
+    return file_name
+
 def init():
     safe_mkdir("temp")
     safe_mkdir("Downloads")
