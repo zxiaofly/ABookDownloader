@@ -41,7 +41,7 @@ def init():
     safe_mkdir("Downloads")
     print("启动成功！")
     print("ABookDownloader是由HEIGE-PCloud编写的开源Abook下载软件")
-    print("当前版本 1.0.2 可前往项目主页检查更新")
+    print("当前版本 1.0.3 可前往项目主页检查更新")
     print("项目主页 https://github.com/HEIGE-PCloud/ABookDownloader")
     print("如果遇到任何问题，欢迎提交issue")
     print("如果这款软件帮到了您，欢迎前往该项目主页请作者喝奶茶QwQ")
@@ -157,7 +157,7 @@ def load_chapter_info(course_id):
         chapter_data.remove(chapter)
 
     for chapter in chapter_data:
-        validate_file_name(chapter_data['name'])
+        validate_file_name(chapter['name'])
     
     chapter_list = chapter_data
 
