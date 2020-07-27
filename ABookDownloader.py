@@ -29,9 +29,11 @@ def validate_file_name(file_name):
     current_time = str(time.strftime("%Y-%m-%d/%H.%M.%S", time.localtime()))
     key_word = ['\\', '/', ':', '*', '?', '"', '<', '>', '|']
     file_name = str(file_name)
+    original_file_name = file_name
     for word in key_word:
         file_name = file_name.replace(word, '')
-    file_name = file_name + " Renamed: " + current_time
+    if file_name != original_file_name:
+        file_name = file_name + " Renamed: " + current_time
     return file_name
 
 def init():
@@ -120,6 +122,7 @@ def load_courses_info():
         print('There are {} course(s) availaible.'.format(len(courses_data)))
         for i in range(len(courses_data)):
             course_title = eval('courses_data[{}]'.format(i))['courseTitle']
+            validate_file_name(course_title)
             course_id = eval('courses_data[{}]'.format(i))['courseInfoId']
             courses_list.append({'course_id': course_id, 'course_title': course_title})
 
@@ -152,6 +155,10 @@ def load_chapter_info(course_id):
 
     for chapter in remove_list:
         chapter_data.remove(chapter)
+
+    for chapter in chapter_data:
+        validate_file_name(chapter_data['name'])
+    
     chapter_list = chapter_data
 
 def display_chapter_info(selected_course):
