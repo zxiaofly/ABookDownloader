@@ -33,7 +33,7 @@
 1. 部分书本或章节名称可能包含违反Windows文件/文件夹命名规则的字符，如`*`，`<`等。（已完成开发，正在等待测试）
 2. 由于使用的是默认的cmd终端，可能会有中文字符显示错误的问题。（都0202年了，请使用[Windows Terminal](https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701)）
 
-   可行的修复方法：
+   可行的临时修复方法：
    1. 进入控制面板
    2. 进入区域（region）
    3. 进入管理（Administrative）选择卡
