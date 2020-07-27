@@ -48,6 +48,7 @@ def init():
     print("<========================================================>")
 
 def file_downloader(file_name, url):
+    file_name = validate_file_name(file_name)
     headers = {'Proxy-Connection':'keep-alive'}
     r = requests.get(url, stream=True, headers=headers)
     content_length = float(r.headers['content-length'])

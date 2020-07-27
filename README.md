@@ -33,13 +33,13 @@
 1. 部分书本或章节名称可能包含违反Windows文件/文件夹命名规则的字符，如`*`，`<`等。（已完成开发，正在等待测试）
 2. 由于使用的是默认的cmd终端，可能会有中文字符显示错误的问题。（都0202年了，请使用[Windows Terminal](https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701)）
 
-可行的修复方法：
-- 进入控制面板
-- 进入区域（region）
-- 进入管理（Administrative）选择卡
-- 点击更改系统区域设置（Change System Local...）按钮
-- 将区域选择为中文（简体，中国）Chinese (Simplified, China)
-- 重新启动
+   可行的修复方法：
+   1. 进入控制面板
+   2. 进入区域（region）
+   3. 进入管理（Administrative）选择卡
+   4. 点击更改系统区域设置（Change System Local...）按钮
+   5. 将区域选择为中文（简体，中国）Chinese (Simplified, China)
+   6. 确认设置并重新启动Windows
 
 ## 1.0.2版本更新
 
