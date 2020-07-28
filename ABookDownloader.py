@@ -7,14 +7,11 @@ import requests
 session = requests.session()
 
 COURSES_INFO_FILE = ".\\temp\\course_info.json"
-DOWNLOAD_LINK = ".\\temp\\download_link.json"
 USER_INFO = ".\\temp\\user_info.json"
 DOWNLOAD_DIR = ".\\Downloads\\"
 ROOT = 0
 courses_list = []
 chapter_list = []
-download_info = []
-
 
 def safe_mkdir(dir_name):
     try:
@@ -196,9 +193,6 @@ def download_course_from_root(root_chapter, course_id, path):
                 file_type = file_url[str(file_url).find('.'):]
                 location = path + str(file_name) + str(file_type)
                 file_downloader(location, url)
-        # download_info.append(info)
-        # with open(DOWNLOAD_LINK, 'w', encoding='utf-8') as file:
-        #     json.dump(download_info, file, ensure_ascii=False, indent=4)
 
 def download_course(download_dir, selected_course, selected_root):
     safe_mkdir(download_dir + selected_course['courseTitle'])
