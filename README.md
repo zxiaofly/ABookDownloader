@@ -30,8 +30,7 @@
 
 ## 已知问题
 
-1. 部分书本或章节名称可能包含违反Windows文件/文件夹命名规则的字符，如`*`，`<`等。（已完成开发，正在等待测试）
-2. 由于使用的是默认的cmd终端，可能会有中文字符显示错误的问题。（都0202年了，请使用[Windows Terminal](https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701)）
+1. 由于使用的是默认的cmd终端，可能会有中文字符显示错误的问题。（都0202年了，请使用[Windows Terminal](https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701)）
 
    可行的临时修复方法：
    1. 进入控制面板
@@ -40,6 +39,10 @@
    4. 点击更改系统区域设置（Change System Local...）按钮
    5. 将区域选择为中文（简体，中国）Chinese (Simplified, China)
    6. 确认设置并重新启动Windows
+
+## 1.0.3版本更新
+
+修复了文件中包含不合法字符时出现的下载失败问题。
 
 ## 1.0.2版本更新
 
