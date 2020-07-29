@@ -43,20 +43,27 @@ def validate_file_name(file_name):
 
 
 def load_settings(file_name):
+    global DOWNLOAD_DIR, settings
     with open(file_name, 'r', encoding='utf-8') as file:
         settings = json.load(file)
     print(settings)
-    global DOWNLOAD_DIR
     DOWNLOAD_DIR = settings['download_path']
     print(DOWNLOAD_DIR)
 
 
+def save_settings(file_name):
+    with open(file_name, 'w', encoding='utf-8') as file:
+        json.dump(settings, file, ensure_ascii=False, indent=4)
+    logging.info("Settings saved.")
+
+
 def change_download_path():
-    global DOWNLOAD_DIR
+    global DOWNLOAD_DIR, settings
     new_download_path = tkinter.filedialog.askdirectory(title="Please select a folder:")
     logging.info(new_download_path)
     new_download_path += "\\"
     DOWNLOAD_DIR = new_download_path
+    settings['download_path'] = DOWNLOAD_DIR
 
 
 def init():
