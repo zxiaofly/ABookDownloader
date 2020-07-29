@@ -44,11 +44,13 @@ def validate_file_name(file_name):
 
 def load_settings(file_name):
     global DOWNLOAD_DIR, settings
-    with open(file_name, 'r', encoding='utf-8') as file:
-        settings = json.load(file)
-    print(settings)
+    try:
+        with open(file_name, 'r', encoding='utf-8') as file:
+            settings = json.load(file)
+    except FileNotFoundError:
+        settings = {'download_path' : '.\\Downloads\\'}
+        save_settings(file_name)
     DOWNLOAD_DIR = settings['download_path']
-    print(DOWNLOAD_DIR)
 
 
 def save_settings(file_name):
@@ -60,10 +62,12 @@ def save_settings(file_name):
 def change_download_path():
     global DOWNLOAD_DIR, settings
     new_download_path = tkinter.filedialog.askdirectory(title="Please select a folder:")
-    logging.info(new_download_path)
+    new_download_path = new_download_path.replace('/', '\\')
     new_download_path += "\\"
+    logging.info(new_download_path)
     DOWNLOAD_DIR = new_download_path
     settings['download_path'] = DOWNLOAD_DIR
+    save_settings(SETTINGS_INFO)
 
 
 def init():
