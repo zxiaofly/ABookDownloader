@@ -372,6 +372,8 @@ if __name__ == "__main__":
             selected_root = select_chapter(
                 selected_course['courseTitle'], ROOT)
 
+            if selected_root == False:
+                continue
             if selected_root == True:
                 root_list = []
                 for chapter in chapter_list:
