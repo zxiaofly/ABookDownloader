@@ -4,7 +4,7 @@
 
 ## 如何使用？
 
-[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0.4/ABookDownloaderV1.0.4.zip)
+[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0.5/ABookDownloaderV1.0.5.zip)
 
 下载完成后解压缩
 
