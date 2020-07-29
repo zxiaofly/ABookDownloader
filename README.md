@@ -10,21 +10,9 @@
 
 然后进入解压完的目录，双击打开`ABookDownloader.exe`即可使用啦！
 
-### 如果出现乱码如何解决？
-
-安装[Windows Terminal](https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701)
-
-将`ABookDownloader.exe`文件拖入`Windows Terminal`的窗口中
-
-按下回车键，即可运行ww！
-
-**在输入密码时不会显示密码，也不会显示`*`一类的占位符。**
-
-**但只需要照常正确输入密码即可使用。**
-
 ## 已知问题
 
-1. 由于使用的是默认的cmd终端，可能会有中文字符显示错误的问题。（都0202年了，请使用[Windows Terminal](https://www.microsoft.com/zh-cn/p/windows-terminal/9n0dx20hk701)）
+1. 由于使用的是默认的cmd终端，可能会有中文字符显示错误的问题。
 
    可行的临时修复方法：
    1. 进入控制面板
