@@ -3,15 +3,19 @@ import json
 import time
 import logging
 import requests
+import tkinter.filedialog
 
 session = requests.session()
 
 COURSES_INFO_FILE = ".\\temp\\course_info.json"
+SETTINGS_INFO = ".\\temp\\settings.json"
 USER_INFO = ".\\temp\\user_info.json"
 DOWNLOAD_DIR = ".\\Downloads\\"
 ROOT = 0
 courses_list = []
 chapter_list = []
+settings = []
+
 
 def safe_mkdir(dir_name):
     try:
@@ -19,11 +23,13 @@ def safe_mkdir(dir_name):
     except FileExistsError:
         pass
 
+
 def safe_remove(dir_name):
     try:
         os.remove(str(dir_name))
     except FileNotFoundError:
         pass
+
 
 def validate_file_name(file_name):
     key_word = ['/', ':', '*', '?', '"', '<', '>', '|']
@@ -34,6 +40,24 @@ def validate_file_name(file_name):
     if file_name != original_file_name:
         file_name = file_name + "(Renamed)"
     return file_name
+
+
+def load_settings(file_name):
+    with open(file_name, 'r', encoding='utf-8') as file:
+        settings = json.load(file)
+    print(settings)
+    global DOWNLOAD_DIR
+    DOWNLOAD_DIR = settings['download_path']
+    print(DOWNLOAD_DIR)
+
+
+def change_download_path():
+    global DOWNLOAD_DIR
+    new_download_path = tkinter.filedialog.askdirectory(title="Please select a folder:")
+    logging.info(new_download_path)
+    new_download_path += "\\"
+    DOWNLOAD_DIR = new_download_path
+
 
 def init():
     """This function will create temp and Downloads folders and display welcome. temp is for logs and information gathered while the program is running. The Downloads folder is where to save the downloaded file by default."""
@@ -47,16 +71,17 @@ def init():
     logger.addHandler(chlr)
     logger.addHandler(fhlr)
     logging.info("Started successfully!")
+    load_settings(SETTINGS_INFO)
 
     print("ABookDownloader是由HEIGE-PCloud编写的开源Abook下载软件")
-    print("当前版本 1.0.4 可前往项目主页检查更新")
+    print("当前版本 1.0.5 可前往项目主页检查更新")
     print("项目主页 https://github.com/HEIGE-PCloud/ABookDownloader")
     print("如果遇到任何问题，欢迎提交issue")
     print("如果这款软件帮到了您，欢迎前往该项目主页请作者喝奶茶QwQ")
     print("<========================================================>")
 
+
 def file_downloader(file_name, url):
-    file_name = validate_file_name(file_name)
     headers = {'Proxy-Connection': 'keep-alive'}
     r = requests.get(url, stream=True, headers=headers)
     content_length = float(r.headers['content-length'])
@@ -78,6 +103,7 @@ def file_downloader(file_name, url):
                     time_start = time.time()
     print("\nDownload {} successfully!".format(file_name))
 
+
 def Abook_login(login_name, login_password):
     login_url = "http://abook.hep.com.cn/loginMobile.action"
     login_status_url = "http://abook.hep.com.cn/verifyLoginMobile.action"
@@ -94,6 +120,7 @@ def Abook_login(login_name, login_password):
         safe_remove(".\\temp\\user_info.json")
         return False
 
+
 def get_courses_info(file_name):
     """Get courses info from login, need pass through the path to save the json file of courses information."""
 
@@ -102,6 +129,7 @@ def get_courses_info(file_name):
         json.dump(session.get(course_info_url).json(),
                   file, ensure_ascii=False, indent=4)
     logging.info("Courses info fetched!")
+
 
 def load_courses_info(file_name):
     """Load courses info from file_name and store them into the global courses_list."""
@@ -120,6 +148,7 @@ def load_courses_info(file_name):
             courses_list.append(course)
     logging.info("Courses info loaded.")
 
+
 def get_chapter_info(course_id):
     """Get the chapter info by course_id"""
     course_url = 'http://abook.hep.com.cn/resourceStructure.action?courseInfoId={}'.format(
@@ -128,6 +157,7 @@ def get_chapter_info(course_id):
         json.dump(session.post(course_url).json(),
                   file, ensure_ascii=False, indent=4)
     logging.info("Chapter for course {} fetched".format(course_id))
+
 
 def load_chapter_info(course_id):
     """Load chapter info from local file and store it into globe variable chapter_list."""
@@ -140,12 +170,15 @@ def load_chapter_info(course_id):
         chapter_list.append(chapter)
     logging.info("Chapter for {} loaded.".format(course_id))
 
+
 def display_courses_info():
     print("0 下载全部")
     for i in range(len(courses_list)):
         print(i + 1, courses_list[i]['courseTitle'])
     print("o 打开下载文件夹")
+    print("s 更改保存目录")
     print("q 退出")
+
 
 def display_chapter_info(title_name, pid):
     """Display chapter info by selected course and parrent id."""
@@ -156,6 +189,7 @@ def display_chapter_info(title_name, pid):
             print(i + 1, chapter_list[i]['name'])
     print("q 返回上一级")
 
+
 def chapter_has_child(selected_chapter):
     child_chapter = []
     for chapter in chapter_list:
@@ -163,13 +197,15 @@ def chapter_has_child(selected_chapter):
             child_chapter.append(chapter)
     return child_chapter
 
+
 def download_course_from_root(root_chapter, course_id, path):
     # for chapter in root_chapter:
     child_list = chapter_has_child(root_chapter)
     if len(child_list) != 0:
         for child in child_list:
             safe_mkdir(path + child['name'])
-            download_course_from_root(child, course_id, path + child['name'] + '\\')
+            download_course_from_root(
+                child, course_id, path + child['name'] + '\\')
     else:
         download_link_url = "http://abook.hep.com.cn/courseResourceList.action?courseInfoId={}&treeId={}&cur=1".format(
             course_id, root_chapter['id'])
@@ -179,7 +215,8 @@ def download_course_from_root(root_chapter, course_id, path):
                 info = session.get(download_link_url).json()[0]
                 break
             except:
-                logging.error("Info fetched failed, will restart in 5 seconds.")
+                logging.error(
+                    "Info fetched failed, will restart in 5 seconds.")
                 time.sleep(5)
         if 'myMobileResourceList' in info:
             course = info['myMobileResourceList']
@@ -197,13 +234,18 @@ def download_course_from_root(root_chapter, course_id, path):
                         file_downloader(location, url)
                         break
                     except:
-                        logging.error("Download failed, will restart in 5 seconds.")
+                        logging.error(
+                            "Download failed, will restart in 5 seconds.")
                         time.sleep(5)
+
 
 def download_course(download_dir, selected_course, selected_root):
     safe_mkdir(download_dir + selected_course['courseTitle'])
-    safe_mkdir(download_dir + selected_course['courseTitle'] + "\\" + selected_root['name'])
-    download_course_from_root(selected_root, selected_course['courseInfoId'], DOWNLOAD_DIR + selected_course['courseTitle'] + "\\" + selected_root['name'] + "\\")
+    safe_mkdir(download_dir +
+               selected_course['courseTitle'] + "\\" + selected_root['name'])
+    download_course_from_root(selected_root, selected_course['courseInfoId'], DOWNLOAD_DIR +
+                              selected_course['courseTitle'] + "\\" + selected_root['name'] + "\\")
+
 
 def read_login_info(file_name):
     """Read the local login info from file. Pass through the file name. Return user_info as json if succeed, or return boolean False if failed."""
@@ -219,6 +261,7 @@ def read_login_info(file_name):
         logging.info("Did not find local user info. Ask for input instead.")
         return False
 
+
 def write_login_info(user_info, file_name):
     """Write the user_info as json to file_name file."""
     with open(file_name, 'w', encoding='utf-8') as file:
@@ -227,6 +270,7 @@ def write_login_info(user_info, file_name):
             logging.info("Login details saved.")
         except:
             logging.error("Fail to save login details.")
+
 
 def select_chapter(title_name, pid):
     while True:
@@ -247,6 +291,7 @@ def select_chapter(title_name, pid):
                 return result
         if str(choice) == 'q':
             return False
+
 
 if __name__ == "__main__":
     init()
@@ -292,6 +337,9 @@ if __name__ == "__main__":
             if choice == 'o':
                 os.system("explorer " + DOWNLOAD_DIR)
                 continue
+            elif choice == 's':
+                change_download_path()
+                continue
             else:
                 logging.info("Bye~")
             break
@@ -321,7 +369,8 @@ if __name__ == "__main__":
             # selected_root
             #               = True when user choose to download the entire course
             #               = course_info when user choose to download a specific sub-chapter
-            selected_root = select_chapter(selected_course['courseTitle'], ROOT)
+            selected_root = select_chapter(
+                selected_course['courseTitle'], ROOT)
 
             if selected_root == True:
                 root_list = []
