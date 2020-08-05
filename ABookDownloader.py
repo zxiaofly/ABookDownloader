@@ -7,10 +7,10 @@ import tkinter.filedialog
 
 session = requests.session()
 
-COURSES_INFO_FILE = ".\\temp\\course_info.json"
-SETTINGS_INFO = ".\\temp\\settings.json"
-USER_INFO = ".\\temp\\user_info.json"
-DOWNLOAD_DIR = ".\\Downloads\\"
+COURSES_INFO_FILE = "./temp/course_info.json"
+SETTINGS_INFO = "./temp/settings.json"
+USER_INFO = "./temp/user_info.json"
+DOWNLOAD_DIR = "./Downloads/"
 ROOT = 0
 courses_list = []
 chapter_list = []
@@ -48,7 +48,7 @@ def load_settings(file_name):
         with open(file_name, 'r', encoding='utf-8') as file:
             settings = json.load(file)
     except FileNotFoundError:
-        settings = {'download_path' : '.\\Downloads\\'}
+        settings = {'download_path' : './Downloads/'}
         save_settings(file_name)
     DOWNLOAD_DIR = settings['download_path']
 
@@ -62,8 +62,7 @@ def save_settings(file_name):
 def change_download_path():
     global DOWNLOAD_DIR, settings
     new_download_path = tkinter.filedialog.askdirectory(title="Please select a folder:")
-    new_download_path = new_download_path.replace('/', '\\')
-    new_download_path += "\\"
+    new_download_path += "/"
     logging.info(new_download_path)
     DOWNLOAD_DIR = new_download_path
     settings['download_path'] = DOWNLOAD_DIR
@@ -78,7 +77,7 @@ def init():
     logger.setLevel('DEBUG')
     chlr = logging.StreamHandler()
     chlr.setLevel('INFO')
-    fhlr = logging.FileHandler('temp\\ABookDownloaderLog.log')
+    fhlr = logging.FileHandler('temp/ABookDownloaderLog.log')
     logger.addHandler(chlr)
     logger.addHandler(fhlr)
     logging.info("Started successfully!")
@@ -128,7 +127,7 @@ def Abook_login(login_name, login_password):
         return True
     else:
         logging.error("Login failed, please try again.")
-        safe_remove(".\\temp\\user_info.json")
+        safe_remove("./temp/user_info.json")
         return False
 
 
@@ -164,7 +163,7 @@ def get_chapter_info(course_id):
     """Get the chapter info by course_id"""
     course_url = 'http://abook.hep.com.cn/resourceStructure.action?courseInfoId={}'.format(
         course_id)
-    with open(".\\temp\\" + str(course_id) + '.json', 'w', encoding='utf-8') as file:
+    with open("./temp/" + str(course_id) + '.json', 'w', encoding='utf-8') as file:
         json.dump(session.post(course_url).json(),
                   file, ensure_ascii=False, indent=4)
     logging.info("Chapter for course {} fetched".format(course_id))
@@ -174,7 +173,7 @@ def load_chapter_info(course_id):
     """Load chapter info from local file and store it into globe variable chapter_list."""
     global chapter_list
     chapter_list = []
-    with open(".\\temp\\" + str(course_id) + '.json', 'r', encoding='utf-8') as chapter_info:
+    with open("./temp/" + str(course_id) + '.json', 'r', encoding='utf-8') as chapter_info:
         chapter_data: list = json.load(chapter_info)
     for chapter in chapter_data:
         chapter['name'] = validate_file_name(chapter['name'])
@@ -216,7 +215,7 @@ def download_course_from_root(root_chapter, course_id, path):
         for child in child_list:
             safe_mkdir(path + child['name'])
             download_course_from_root(
-                child, course_id, path + child['name'] + '\\')
+                child, course_id, path + child['name'] + '/')
     else:
         download_link_url = "http://abook.hep.com.cn/courseResourceList.action?courseInfoId={}&treeId={}&cur=1".format(
             course_id, root_chapter['id'])
@@ -253,9 +252,9 @@ def download_course_from_root(root_chapter, course_id, path):
 def download_course(download_dir, selected_course, selected_root):
     safe_mkdir(download_dir + selected_course['courseTitle'])
     safe_mkdir(download_dir +
-               selected_course['courseTitle'] + "\\" + selected_root['name'])
+               selected_course['courseTitle'] + "/" + selected_root['name'])
     download_course_from_root(selected_root, selected_course['courseInfoId'], DOWNLOAD_DIR +
-                              selected_course['courseTitle'] + "\\" + selected_root['name'] + "\\")
+                              selected_course['courseTitle'] + "/" + selected_root['name'] + "/")
 
 
 def read_login_info(file_name):
