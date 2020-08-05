@@ -5,17 +5,17 @@ import logging
 import requests
 import tkinter.filedialog
 
+from Settings import *
+
 session = requests.session()
 
 COURSES_INFO_FILE = "./temp/course_info.json"
-SETTINGS_INFO = "./temp/settings.json"
+SETTINGS_PATH = "./temp/settings.json"
 USER_INFO = "./temp/user_info.json"
 DOWNLOAD_DIR = "./Downloads/"
 ROOT = 0
 courses_list = []
 chapter_list = []
-settings = []
-
 
 def safe_mkdir(dir_name):
     try:
@@ -41,32 +41,14 @@ def validate_file_name(file_name):
         file_name = file_name + "(Renamed)"
     return file_name
 
-
-def load_settings(file_name):
-    global DOWNLOAD_DIR, settings
-    try:
-        with open(file_name, 'r', encoding='utf-8') as file:
-            settings = json.load(file)
-    except FileNotFoundError:
-        settings = {'download_path' : './Downloads/'}
-        save_settings(file_name)
-    DOWNLOAD_DIR = settings['download_path']
-
-
-def save_settings(file_name):
-    with open(file_name, 'w', encoding='utf-8') as file:
-        json.dump(settings, file, ensure_ascii=False, indent=4)
-    logging.info("Settings saved.")
-
-
-def change_download_path():
-    global DOWNLOAD_DIR, settings
+def change_download_path(settings):
+    global DOWNLOAD_DIR
     new_download_path = tkinter.filedialog.askdirectory(title="Please select a folder:")
     new_download_path += "/"
     logging.info(new_download_path)
     DOWNLOAD_DIR = new_download_path
     settings['download_path'] = DOWNLOAD_DIR
-    save_settings(SETTINGS_INFO)
+    settings.save_settings_to_file()
 
 
 def init():
@@ -81,7 +63,6 @@ def init():
     logger.addHandler(chlr)
     logger.addHandler(fhlr)
     logging.info("Started successfully!")
-    load_settings(SETTINGS_INFO)
 
     print("ABookDownloader是由HEIGE-PCloud编写的开源Abook下载软件")
     print("当前版本 1.0.5 可前往项目主页检查更新")
@@ -305,6 +286,9 @@ def select_chapter(title_name, pid):
 
 if __name__ == "__main__":
     init()
+    settings = Settings(SETTINGS_PATH)
+    DOWNLOAD_DIR = settings["download_path"]
+
     # First check if there is user information stored locally.
     # If there is, then ask whether the user will use it or not.
     # If there isn't, ask user type in information directly.
@@ -345,10 +329,10 @@ if __name__ == "__main__":
             choice = int(choice)
         except ValueError:
             if choice == 'o':
-                os.system("explorer " + DOWNLOAD_DIR)
+                os.system("explorer " + DOWNLOAD_DIR.replace('/', '\\'))
                 continue
             elif choice == 's':
-                change_download_path()
+                change_download_path(settings)
                 continue
             else:
                 logging.info("Bye~")
