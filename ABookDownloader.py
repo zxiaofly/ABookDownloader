@@ -95,19 +95,14 @@ def get_courses_info(file_name):
 
     course_info_url = "http://abook.hep.com.cn/selectMyCourseList.action?mobile=true&cur=1"
     with open(file_name, 'w', encoding='utf-8') as file:
-        json.dump(session.get(course_info_url).json(),
-                  file, ensure_ascii=False, indent=4)
+        json.dump(session.get(course_info_url).json(), file, ensure_ascii=False, indent=4)
     logging.info("Courses info fetched!")
 
-
-def load_courses_info(file_name):
-    """Load courses info from file_name and store them into the global courses_list."""
     global courses_list
     courses_list = []
     with open(file_name, 'r', encoding='utf-8') as courses_info:
         try:
-            courses_data: list = json.load(courses_info)[
-                0]['myMobileCourseList']
+            courses_data: list = json.load(courses_info)[0]['myMobileCourseList']
         except:
             logging.error("Cannot load courses.")
             return
@@ -173,8 +168,7 @@ def download_course_from_root(root_chapter, course_id, path):
             download_course_from_root(
                 child, course_id, path + child['name'] + '/')
     else:
-        download_link_url = "http://abook.hep.com.cn/courseResourceList.action?courseInfoId={}&treeId={}&cur=1".format(
-            course_id, root_chapter['id'])
+        download_link_url = "http://abook.hep.com.cn/courseResourceList.action?courseInfoId={}&treeId={}&cur=1".format(course_id, root_chapter['id'])
         download_url_base = "http://abook.hep.com.cn/ICourseFiles/"
         while True:
             try:
@@ -294,7 +288,6 @@ if __name__ == "__main__":
 
     # Get and load courses infomation
     get_courses_info(COURSES_INFO_FILE)
-    load_courses_info(COURSES_INFO_FILE)
 
     while True:
         display_courses_info()
