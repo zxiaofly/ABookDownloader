@@ -8,6 +8,7 @@ import requests
 
 from FileDownloader import *
 from Settings import *
+from OSHandle import *
 
 session = requests.session()
 
@@ -18,20 +19,6 @@ DOWNLOAD_DIR = "./Downloads/"
 ROOT = 0
 courses_list = []
 chapter_list = []
-
-def safe_mkdir(dir_name):
-    try:
-        os.mkdir(str(dir_name))
-    except FileExistsError:
-        pass
-
-
-def safe_remove(dir_name):
-    try:
-        os.remove(str(dir_name))
-    except FileNotFoundError:
-        pass
-
 
 def validate_file_name(file_name):
     key_word = ['/', ':', '*', '?', '"', '<', '>', '|']
