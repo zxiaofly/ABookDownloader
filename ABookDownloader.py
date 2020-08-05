@@ -1,12 +1,13 @@
-import os
 import json
-import time
 import logging
-import requests
+import os
+import time
 import tkinter.filedialog
 
-from Settings import *
+import requests
+
 from FileDownloader import *
+from Settings import *
 
 session = requests.session()
 
@@ -119,20 +120,17 @@ def load_courses_info(file_name):
 
 def get_chapter_info(course_id):
     """Get the chapter info by course_id"""
-    course_url = 'http://abook.hep.com.cn/resourceStructure.action?courseInfoId={}'.format(
-        course_id)
-    with open("./temp/" + str(course_id) + '.json', 'w', encoding='utf-8') as file:
-        json.dump(session.post(course_url).json(),
-                  file, ensure_ascii=False, indent=4)
-    logging.info("Chapter for course {} fetched".format(course_id))
-
-
-def load_chapter_info(course_id):
-    """Load chapter info from local file and store it into globe variable chapter_list."""
     global chapter_list
     chapter_list = []
-    with open("./temp/" + str(course_id) + '.json', 'r', encoding='utf-8') as chapter_info:
-        chapter_data: list = json.load(chapter_info)
+
+    course_url = 'http://abook.hep.com.cn/resourceStructure.action?courseInfoId={}'.format(course_id)
+    chapter_data = session.post(course_url).json()
+
+    # Save chapter data
+    with open("./temp/" + str(course_id) + '.json', 'w', encoding='utf-8') as file:
+        json.dump(chapter_data, file, ensure_ascii=False, indent=4)
+    logging.info("Chapter for course {} fetched".format(course_id))
+
     for chapter in chapter_data:
         chapter['name'] = validate_file_name(chapter['name'])
         chapter_list.append(chapter)
@@ -319,7 +317,6 @@ if __name__ == "__main__":
         if choice == 0:
             for selected_course in courses_list:
                 get_chapter_info(selected_course['courseInfoId'])
-                load_chapter_info(selected_course['courseInfoId'])
                 root_list = []
                 for chapter in chapter_list:
                     if chapter['pId'] == 0:
@@ -334,7 +331,6 @@ if __name__ == "__main__":
                 continue
             # Get and load chapter information
             get_chapter_info(selected_course['courseInfoId'])
-            load_chapter_info(selected_course['courseInfoId'])
 
             # select_chapter(selected_course['courseTitle'], ROOT)
             # selected_root
