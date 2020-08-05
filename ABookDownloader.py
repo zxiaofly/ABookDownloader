@@ -7,8 +7,9 @@ import tkinter.filedialog
 import requests
 
 from FileDownloader import *
-from Settings import *
+from NameValidator import *
 from OSHandle import *
+from Settings import *
 
 session = requests.session()
 
@@ -19,16 +20,6 @@ DOWNLOAD_DIR = "./Downloads/"
 ROOT = 0
 courses_list = []
 chapter_list = []
-
-def validate_file_name(file_name):
-    key_word = ['/', ':', '*', '?', '"', '<', '>', '|']
-    file_name = str(file_name)
-    original_file_name = file_name
-    for word in key_word:
-        file_name = file_name.replace(word, '')
-    if file_name != original_file_name:
-        file_name = file_name + "(Renamed)"
-    return file_name
 
 def change_download_path(settings):
     global DOWNLOAD_DIR
