@@ -10,6 +10,7 @@ from FileDownloader import *
 from NameValidator import *
 from OSHandle import *
 from Settings import *
+from UserLogin import *
 
 session = requests.session()
 
@@ -50,22 +51,6 @@ def init():
     print("如果遇到任何问题，欢迎提交issue")
     print("如果这款软件帮到了您，欢迎前往该项目主页请作者喝奶茶QwQ")
     print("<========================================================>")
-
-def Abook_login(login_name, login_password):
-    login_url = "http://abook.hep.com.cn/loginMobile.action"
-    login_status_url = "http://abook.hep.com.cn/verifyLoginMobile.action"
-    login_data = {"loginUser.loginName": login_name,
-                  "loginUser.loginPassword": login_password}
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 Edg/83.0.478.64"}
-    session.post(url=login_url, data=login_data, headers=headers)
-    if session.post(login_status_url).json()["message"] == "已登录":
-        logging.info("Successfully login in!")
-        return True
-    else:
-        logging.error("Login failed, please try again.")
-        safe_remove("./temp/user_info.json")
-        return False
 
 
 def get_courses_info(file_name):
@@ -184,32 +169,6 @@ def download_course(download_dir, selected_course, selected_root):
     download_course_from_root(selected_root, selected_course['courseInfoId'], DOWNLOAD_DIR +
                               selected_course['courseTitle'] + "/" + selected_root['name'] + "/")
 
-
-def read_login_info(file_name):
-    """Read the local login info from file. Pass through the file name. Return user_info as json if succeed, or return boolean False if failed."""
-    try:
-        with open(file_name, 'r', encoding='utf-8') as file:
-            try:
-                login_info: list = json.load(file)
-                logging.info("Successfully read the local user info.")
-                return login_info
-            except json.decoder.JSONDecodeError:
-                return False
-    except FileNotFoundError:
-        logging.info("Did not find local user info. Ask for input instead.")
-        return False
-
-
-def write_login_info(user_info, file_name):
-    """Write the user_info as json to file_name file."""
-    with open(file_name, 'w', encoding='utf-8') as file:
-        try:
-            json.dump(user_info, file, ensure_ascii=False, indent=4)
-            logging.info("Login details saved.")
-        except:
-            logging.error("Fail to save login details.")
-
-
 def select_chapter(title_name, pid):
     while True:
         display_chapter_info(title_name, pid)
@@ -233,36 +192,13 @@ def select_chapter(title_name, pid):
 
 if __name__ == "__main__":
     init()
+    app = QApplication(sys.argv)
+    
     settings = Settings(SETTINGS_PATH)
     DOWNLOAD_DIR = settings["download_path"]
 
-    # First check if there is user information stored locally.
-    # If there is, then ask whether the user will use it or not.
-    # If there isn't, ask user type in information directly.
-    user_info = read_login_info(USER_INFO)
-
-    if user_info != False:
-        choice = input("User {} founded! Do you want to log in as {}? (y/n) ".format(
-            user_info['login_name'], user_info['login_name']))
-        if choice == 'n':
-            user_info = False
-
-    if user_info == False:
-        login_name = input("Please input login name: ")
-        login_password = input("Please input login password: ")
-        user_info = {'login_name': login_name,
-                     'login_password': login_password}
-        write_login_info(user_info, USER_INFO)
-
-    # User login
-    while True:
-        if Abook_login(user_info['login_name'], user_info['login_password']):
-            break
-        login_name = input("Please input login name: ")
-        login_password = input("Please input login password: ")
-        user_info = {'login_name': login_name,
-                     'login_password': login_password}
-        write_login_info(user_info, USER_INFO)
+    user = ABookLogin(USER_INFO)
+    session = user.session
 
     # Get and load courses infomation
     get_courses_info(COURSES_INFO_FILE)
