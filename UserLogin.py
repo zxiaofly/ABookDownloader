@@ -2,8 +2,8 @@ import json
 import logging
 import requests
 import sys
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
+from PySide2.QtWidgets import QDialog, QLineEdit, QLabel, QCheckBox, QPushButton, QHBoxLayout, QVBoxLayout
+from PySide2.QtCore import Qt
 
 
 class login_dialog(QDialog):

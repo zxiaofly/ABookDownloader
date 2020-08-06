@@ -5,12 +5,13 @@ import time
 import tkinter.filedialog
 
 import requests
+from PySide2.QtWidgets import QApplication
 
-from FileDownloader import *
-from NameValidator import *
-from OSHandle import *
-from Settings import *
-from UserLogin import *
+from FileDownloader import file_downloader
+from NameValidator import validate_file_name
+from OSHandle import safe_mkdir
+from Settings import Settings
+from UserLogin import ABookLogin
 
 session = requests.session()
 
@@ -192,7 +193,7 @@ def select_chapter(title_name, pid):
 
 if __name__ == "__main__":
     init()
-    app = QApplication(sys.argv)
+    app = QApplication(os.sys.argv)
     
     settings = Settings(SETTINGS_PATH)
     DOWNLOAD_DIR = settings["download_path"]
