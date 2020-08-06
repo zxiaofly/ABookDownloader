@@ -128,4 +128,4 @@ class ABookLogin(login_dialog):
     
     def closeEvent(self, event):
         if self.login_status == False:
-            exit(0)
+            sys.exit(0)
