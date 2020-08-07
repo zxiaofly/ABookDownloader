@@ -2,11 +2,10 @@ import json
 import logging
 import requests
 import sys
-from PySide2.QtWidgets import QDialog, QLineEdit, QLabel, QCheckBox, QPushButton, QHBoxLayout, QVBoxLayout
-from PySide2.QtCore import Qt
+from PySide2 import QtCore, QtWidgets
 
 
-class login_dialog(QDialog):
+class login_dialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super(login_dialog, self).__init__(parent)
@@ -15,28 +14,28 @@ class login_dialog(QDialog):
         self.setWindowTitle("ABook Login")
 
         # Set widgets
-        self.username_label = QLabel("Username: ")
-        self.username_input = QLineEdit("")
+        self.username_label = QtWidgets.QLabel("Username: ")
+        self.username_input = QtWidgets.QLineEdit("")
         
-        self.password_label = QLabel("Password: ")
-        self.password_input = QLineEdit("")
-        self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_label = QtWidgets.QLabel("Password: ")
+        self.password_input = QtWidgets.QLineEdit("")
+        self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
         
-        self.button = QPushButton("Login")
+        self.button = QtWidgets.QPushButton("Login")
 
-        self.checkbox = QCheckBox("Show")
+        self.checkbox = QtWidgets.QCheckBox("Show")
 
         # Set layout
-        self.username_layout = QHBoxLayout()
+        self.username_layout = QtWidgets.QHBoxLayout()
         self.username_layout.addWidget(self.username_label)
         self.username_layout.addWidget(self.username_input)
 
-        self.password_layout = QHBoxLayout()
+        self.password_layout = QtWidgets.QHBoxLayout()
         self.password_layout.addWidget(self.password_label)
         self.password_layout.addWidget(self.password_input)
         self.password_layout.addWidget(self.checkbox)
 
-        self.layout = QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.addLayout(self.username_layout)
         self.layout.addLayout(self.password_layout)
         self.layout.addWidget(self.button)
@@ -49,16 +48,16 @@ class login_dialog(QDialog):
         self.checkbox.stateChanged.connect(self.password_echo)
 
     def password_echo(self, state):
-        if state == Qt.Checked:
-            self.password_input.setEchoMode(QLineEdit.Normal)
+        if state == QtCore.Qt.Checked:
+            self.password_input.setEchoMode(QtWidgets.QLineEdit.Normal)
         else:
-            self.password_input.setEchoMode(QLineEdit.Password)
+            self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
 
     def user_login(self):
         pass
 
     def login_failed(self):
-        QMessageBox.critical(self, 'Error', 'Login failed.')
+        QtWidgets.QMessageBox.critical(self, 'Error', 'Login failed.')
 
 class ABookLogin(login_dialog):
     def __init__(self, path):
