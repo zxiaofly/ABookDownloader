@@ -5,8 +5,7 @@ import time
 import tkinter.filedialog
 
 import requests
-from PySide2.QtWidgets import QApplication
-
+from PySide2 import QtWidgets
 from FileDownloader import file_downloader
 from NameValidator import validate_file_name
 from OSHandle import safe_mkdir
@@ -193,7 +192,7 @@ def select_chapter(title_name, pid):
 
 if __name__ == "__main__":
     init()
-    app = QApplication(os.sys.argv)
+    app = QtWidgets.QApplication(os.sys.argv)
     
     settings = Settings(SETTINGS_PATH)
     DOWNLOAD_DIR = settings["download_path"]
