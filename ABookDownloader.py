@@ -346,7 +346,7 @@ if __name__ == "__main__":
             choice = int(choice)
         except ValueError:
             if choice == 'o':
-                os.system("explorer " + DOWNLOAD_DIR)
+                os.system("explorer " + DOWNLOAD_DIR.replace('/', '\\'))
                 continue
             elif choice == 's':
                 change_download_path()
