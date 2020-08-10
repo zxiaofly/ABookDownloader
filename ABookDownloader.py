@@ -31,7 +31,8 @@ def safe_remove(dir_name):
         pass
 
 
-def validate_file_name(file_name):
+def validate_file_name(file_name: str):
+    file_name = file_name.strip()
     key_word = ['/', ':', '*', '?', '"', '<', '>', '|']
     file_name = str(file_name)
     original_file_name = file_name
