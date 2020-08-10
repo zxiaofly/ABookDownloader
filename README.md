@@ -4,7 +4,7 @@
 
 ## 如何使用？
 
-[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0.5/ABookDownloaderV1.0.5.zip)
+[点击下载](https://github.com/HEIGE-PCloud/ABookDownloader/releases/download/1.0.5.1/ABookDownloaderV1.0.5.1.zip)
 
 下载完成后解压缩
 
@@ -21,6 +21,10 @@
    4. 点击更改系统区域设置（Change System Local...）按钮
    5. 将区域选择为中文（简体，中国）Chinese (Simplified, China)
    6. 确认设置并重新启动Windows
+
+## 1.0.5.1版本更新
+
+修复了[Issue-02](https://github.com/HEIGE-PCloud/ABookDownloader/issues/2)。
 
 ## 1.0.5版本更新
 
