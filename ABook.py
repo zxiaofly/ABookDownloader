@@ -11,14 +11,23 @@ from Settings import Settings
 
 
 class ABook(object):
-    def __init__(self, path, settings, session):
+    def __init__(self, path: str, settings: Settings, user: ABookLogin):
         super().__init__()
         self.settings = settings
-        self.session = session
+        self.session = user.session
         self.path = path
 
         self.course_list = []
+        self.course_list_path = '{}course_list({}).json'.format(self.path, user.username)
+        
 
+        if os.path.exists(self.course_list_path):
+            with open(self.course_list_path, 'r', encoding='utf-8') as file:
+                self.course_list = json.load(file)
+        else:
+            self.refresh_course_list()
+
+    def refresh_course_list(self):
         self.get_courses_info()
         
         for index in range(len(self.course_list)):
@@ -30,12 +39,10 @@ class ABook(object):
         course_list_url = "http://abook.hep.com.cn/selectMyCourseList.action?mobile=true&cur=1"
         self.course_list = self.session.get(course_list_url).json()
 
-        self.save_json_to_file(self.path + 'course_list.json', self.course_list)
-        logging.info("Courses info fetched!")
-
         try:
             self.course_list = self.course_list[0]['myMobileCourseList']
-            self.save_json_to_file(self.path + 'course_list.json', self.course_list)
+            self.save_json_to_file(self.course_list_path, self.course_list)
+            logging.info("Courses info fetched!")
         except:
             pass
 
@@ -53,12 +60,7 @@ class ABook(object):
                 resource_list = None
             chapter_list[chapter_index]['resource'] = resource_list
         self.course_list[index]['chapter'] = chapter_list
-        self.save_json_to_file(self.path + str(course_id) + '.json', chapter_list)
-        self.save_json_to_file(self.path + 'course_list.json', self.course_list)
-    
-    def get_chapter_resource(self):
-
-        pass
+        self.save_json_to_file(self.course_list_path, self.course_list)
 
     def save_json_to_file(self, path, data):
         with open(path, 'w', encoding='utf-8') as file:
@@ -79,9 +81,14 @@ class CourseTreeView(QtWidgets.QWidget, ABook):
         self.download_button = QtWidgets.QPushButton("Download Selected")
         self.download_button.clicked.connect(self.download_selected)
 
+        self.refresh_button = QtWidgets.QPushButton("Refresh Course List")
+        self.refresh_button.clicked.connect(self.refresh_course_list_tree)
+
+
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.TreeWidget)
         layout.addWidget(self.download_button)
+        layout.addWidget(self.refresh_button)
         self.setLayout(layout)
 
         for index in range(len(self.course_list)):
@@ -129,13 +136,19 @@ class CourseTreeView(QtWidgets.QWidget, ABook):
     
     def download_selected(self):
         print(self.selected_list)
+    
+    def refresh_course_list_tree(self):
+        self.refresh_course_list()
+        self.TreeWidget.clear()
+        for index in range(len(self.course_list)):
+            self.create_tree(self.TreeWidget, self.course_list[index], 'course', index)
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(os.sys.argv)
     user = ABookLogin('./temp/user_info.json')
     settings = Settings('./temp/settings.json')
-    abook = CourseTreeView('./temp/', settings, user.session)
+    abook = CourseTreeView('./temp/', settings, user)
     abook.show()
     sys.exit(app.exec_())
 
