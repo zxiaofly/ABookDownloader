@@ -10,6 +10,7 @@ from PySide2 import QtGui
 from UserLogin import ABookLogin
 from Settings import Settings
 from OSHandle import *
+from FileDownloader import file_downloader
 
 
 class ABook(object):
@@ -64,7 +65,7 @@ class ABook(object):
         self.course_list[index]['chapter'] = chapter_list
         self.save_json_to_file(self.course_list_path, self.course_list)
 
-    def get_resource_info(self, course_id, chapter_id):
+    def get_resource_info(self, course_id: str, chapter_id: str):
         resource_list = self.course_list
         for course in resource_list:
             if str(course["courseInfoId"]) == course_id:
@@ -75,6 +76,32 @@ class ABook(object):
                 resource_list = chapter["resource"]
                 break
         return resource_list
+
+    def get_resource_path(self, course_id: str, chapter_id: str, resource_id: str, resource_name: str, resource_url: str):
+        resource = self.course_list
+        course_name = ""
+        chapter_name = ""
+        resource_name += resource_url[str(resource_url).find('.'):]
+        for course in resource:
+            if str(course["courseInfoId"]) == course_id:
+                course_name = course["courseTitle"]
+                resource = course["chapter"]                
+                break
+        chapter_pid = "0"
+        for chapter in resource:
+            if str(chapter["id"]) == chapter_id:
+                chapter_pid = str(chapter["pId"])
+                chapter_name = chapter["name"] + chapter_name
+                break
+
+        while chapter_pid != "0":
+            chapter_id = chapter_pid
+            for chapter in resource:
+                if str(chapter["id"]) == chapter_id:
+                    chapter_pid = str(chapter["pId"])
+                    chapter_name = chapter["name"] + "/" + chapter_name
+        print(self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/' + resource_name)
+        return (self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/', self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/' + resource_name)
 
     def save_json_to_file(self, path, data):
         with open(path, 'w', encoding='utf-8') as file:
@@ -89,7 +116,7 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         
         self.TreeWidget = QtWidgets.QTreeWidget()
         self.TreeWidget.setHeaderLabels(['Name', "Course ID", "Chapter ID"])
-        self.TreeWidget.setAlternatingRowColors(True)
+        # self.TreeWidget.setAlternatingRowColors(True)
         self.TreeWidget.itemChanged.connect(self.checkbox_toggled)
         self.TreeWidget.doubleClicked.connect(self.get_resource_info_from_item)
 
@@ -99,6 +126,8 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         self.refresh_button = QtWidgets.QPushButton("Refresh Course List")
         self.refresh_button.clicked.connect(self.refresh_course_list_tree)
 
+        self.debug_button = QtWidgets.QPushButton("Debug")
+        self.debug_button.clicked.connect(self.debug)
 
         self.ListView = QtWidgets.QListView()
         # self.ListView.setViewMode(QtWidgets.QListView.IconMode)
@@ -115,6 +144,7 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         main_layout.addLayout(list_widget_layout)
         main_layout.addWidget(self.download_button)
         main_layout.addWidget(self.refresh_button)
+        main_layout.addWidget(self.debug_button)
         self.setLayout(main_layout)
 
         for index in range(len(self.course_list)):
@@ -124,7 +154,10 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         if node.checkState(column) == QtCore.Qt.Checked:
             self.selected_list.append([node.text(0), node.text(1), node.text(2)])
         elif node.checkState(column) == QtCore.Qt.Unchecked:
-            self.selected_list.remove([node.text(0), node.text(1), node.text(2)])
+            if len(self.selected_list) > 1:
+                self.selected_list.remove([node.text(0), node.text(1), node.text(2)])
+            else:
+                self.selected_list = []
 
     def create_item(self, node_name: str, course_id: str, chapter_id: str, has_child: bool):
         item = QtWidgets.QTreeWidgetItem()
@@ -161,7 +194,17 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
                     self.create_tree(tree_item, child_chapter, 'chapter', course_index)
     
     def download_selected(self):
-        print(self.selected_list)
+        print(self.path)
+        for item in self.selected_list:
+            if item[1] != "None" and item[2] != "None":
+                download_list = self.get_resource_info(item[1], item[2])
+                if download_list == None:
+                    return
+                for resource in download_list:
+                    download_dir, download_path = self.get_resource_path(item[1], item[2], resource["resourceInfoId"], resource["resTitle"], resource["resFileUrl"])
+                    os.system("mkdir \"" + download_dir + "\"")
+                    file_downloader(download_path, "http://abook.hep.com.cn/ICourseFiles/" + resource["resFileUrl"])
+                    
     
     def refresh_course_list_tree(self):
         self.refresh_course_list()
@@ -192,7 +235,9 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         item = self.resource_list.itemFromIndex(self.sender().currentIndex())
         url = item.data(QtCore.Qt.ToolTipRole)
         os.system("explorer " + url)
-
+    
+    def debug(self):
+        print(self.selected_list)
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, path, settings, session):
         QtWidgets.QMainWindow.__init__(self)
