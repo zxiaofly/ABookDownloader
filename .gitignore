@@ -136,3 +136,4 @@ temp
 
 # VSCode workspace
 *.code-workspace
+.vscode
