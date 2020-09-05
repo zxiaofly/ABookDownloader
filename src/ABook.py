@@ -63,7 +63,6 @@ class ABook(object):
                 resource_list = None
             chapter_list[chapter_index]['resource'] = resource_list
         self.course_list[index]['chapter'] = chapter_list
-        self.save_json_to_file(self.course_list_path, self.course_list)
 
     def get_resource_info(self, course_id: str, chapter_id: str):
         resource_list = self.course_list
