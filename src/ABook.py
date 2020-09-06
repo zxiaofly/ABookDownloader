@@ -14,14 +14,14 @@ from FileDownloader import file_downloader
 
 
 class ABook(object):
-    def __init__(self, path: str, settings: Settings, user: ABookLogin):
+    def __init__(self, path: str, settings: Settings, user: UserLoginDialog):
         super().__init__()
         self.settings = settings
-        self.session = user.session
+        self.session = user.login_worker.session
         self.path = path
 
         self.course_list = []
-        self.course_list_path = '{}course_list({}).json'.format(self.path, user.username)
+        self.course_list_path = '{}course_list({}).json'.format(self.path, user.login_worker.user_info['loginUser.loginName'])
         
 
         if os.path.exists(self.course_list_path):
@@ -37,6 +37,8 @@ class ABook(object):
             print("Fetching course #{} as total of {} course(s).".format(index + 1, len(self.course_list)))
             self.get_chapter_info(index)
 
+        self.save_json_to_file(self.course_list_path, self.course_list)
+
     def get_courses_info(self):
 
         course_list_url = "http://abook.hep.com.cn/selectMyCourseList.action?mobile=true&cur=1"
@@ -44,7 +46,6 @@ class ABook(object):
 
         try:
             self.course_list = self.course_list[0]['myMobileCourseList']
-            self.save_json_to_file(self.course_list_path, self.course_list)
             logging.info("Courses info fetched!")
         except:
             pass
