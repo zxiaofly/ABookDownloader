@@ -5,7 +5,12 @@ import sys
 from PySide2 import QtCore, QtWidgets
 
 class ABookLogin(QtCore.QThread):
+
+    update_status = QtCore.Signal(str)
+    login_response = QtCore.Signal(bool)
+
     def __init__(self):
+        super().__init__()
         self.username = ''
         self.password = ''
         self.user_info = {'loginUser.loginName': '', 'loginUser.loginPassword': ''}
@@ -18,11 +23,6 @@ class ABookLogin(QtCore.QThread):
 
         # Attempt to read user info from file first
         self.read_user_info_from_file()
-
-    def check_login_status(self):
-        self.login_status =  self.session.post(self.login_status_url).json()["message"] == "已登录"
-        logging.info("Login status: " + str(self.login_status))
-        return self.login_status
 
     def read_user_info_from_file(self):
         try:
@@ -38,10 +38,15 @@ class ABookLogin(QtCore.QThread):
         with open(self.path, 'w', encoding='utf-8') as file:
             json.dump(self.user_info, file, ensure_ascii=False, indent=4)
 
-    def user_login(self):
+    def run(self):
+        self.update_status.emit("Saving user's info to file...")
         self.save_user_info_to_file()
         self.session.post(url=self.login_url, data=self.user_info, headers=self.headers)
-        return self.check_login_status()
+        self.update_status.emit("Posting user's info to ABook...")
+        login_status_msg = self.session.post(self.login_status_url).json()
+        self.update_status.emit("Receive response: " + str(login_status_msg))
+        self.login_response.emit(login_status_msg["message"] == "已登录")
+
 
 class LoginWidget(QtWidgets.QWidget):
     
@@ -49,10 +54,10 @@ class LoginWidget(QtWidgets.QWidget):
         super(LoginWidget, self).__init__(parent)
 
         self.username_label = QtWidgets.QLabel("Username: ")
-        self.username_input = QtWidgets.QLineEdit(self.parent().user_info["loginUser.loginName"])
+        self.username_input = QtWidgets.QLineEdit(self.parent().login_worker.user_info["loginUser.loginName"])
         
         self.password_label = QtWidgets.QLabel("Password: ")
-        self.password_input = QtWidgets.QLineEdit(self.parent().user_info["loginUser.loginPassword"])
+        self.password_input = QtWidgets.QLineEdit(self.parent().login_worker.user_info["loginUser.loginPassword"])
         self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
 
         self.button = QtWidgets.QPushButton("Login")
@@ -87,15 +92,24 @@ class LoginWidget(QtWidgets.QWidget):
 class LoginLogWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
-        QtWidgets.QWidget.__init__(self)
+        super(LoginLogWidget, self).__init__(parent)
 
-class UserLoginDialog(QtWidgets.QDialog, ABookLogin):
+        self.layout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.layout)
+
+    def add_log(self, log: str):
+        log_label = QtWidgets.QLabel(log)
+        self.layout.addWidget(log_label)
+
+
+class UserLoginDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
 
         # Init
         QtWidgets.QDialog.__init__(self)
-        ABookLogin.__init__(self)
+
+        self.login_worker = ABookLogin()
 
         # Set window
         self.setWindowTitle("ABook Login")
@@ -108,24 +122,32 @@ class UserLoginDialog(QtWidgets.QDialog, ABookLogin):
         self.login_widget = LoginWidget(self)
         self.central_widget.addWidget(self.login_widget)
 
+
         self.exec_()
 
-
-
     def btn_user_login(self):
-        self.user_info = {'loginUser.loginName': self.login_widget.username_input.text(), 'loginUser.loginPassword': self.login_widget.password_input.text()}
-        if self.user_login():
+
+        self.loginlog_widget = LoginLogWidget(self)
+        self.central_widget.addWidget(self.loginlog_widget)
+        self.central_widget.setCurrentWidget(self.loginlog_widget)
+        self.login_worker.user_info = {'loginUser.loginName': self.login_widget.username_input.text(), 'loginUser.loginPassword': self.login_widget.password_input.text()}
+
+        self.login_worker.update_status.connect(self.loginlog_widget.add_log)
+        self.login_worker.login_response.connect(self.handle_login_response)
+        self.login_worker.start()
+
+    def handle_login_response(self, response: bool):
+        if response:
             print("success")
             self.close()
         else:
             self.login_failed()
-        
+            self.central_widget.setCurrentWidget(self.login_widget)
 
     def login_failed(self):
         QtWidgets.QMessageBox.critical(self, 'Error', 'Login failed.')
 
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     login = UserLoginDialog()
-
-    print("now here")
