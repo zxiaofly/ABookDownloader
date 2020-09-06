@@ -7,7 +7,7 @@ import requests
 from PySide2 import QtWidgets
 from PySide2 import QtCore
 from PySide2 import QtGui
-from UserLogin import ABookLogin
+from UserLogin import *
 from Settings import Settings
 from OSHandle import *
 from FileDownloader import file_downloader
@@ -255,9 +255,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(os.sys.argv)
-    user = ABookLogin('./temp/user_info.json')
+    user = UserLoginDialog()
     settings = Settings('./temp/settings.json')
     abook = MainWindow('./temp/', settings, user)
     abook.show()
     sys.exit(app.exec_())
-
