@@ -79,22 +79,16 @@ class LoginWidget(QtWidgets.QWidget):
         self.checkbox = QtWidgets.QCheckBox("Show")
         self.checkbox.stateChanged.connect(self.password_echo)
 
-        # set layout
-        self.username_layout = QtWidgets.QHBoxLayout()
-        self.username_layout.addWidget(self.username_label)
-        self.username_layout.addWidget(self.username_input)
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.username_label, 0, 0)
+        layout.addWidget(self.username_input, 0, 1)
+        layout.addWidget(self.password_label, 1, 0)
+        layout.addWidget(self.password_input, 1, 1)
+        layout.addWidget(self.checkbox, 2, 0)
+        layout.addWidget(self.button, 3, 0, 1, 5)
 
-        self.password_layout = QtWidgets.QHBoxLayout()
-        self.password_layout.addWidget(self.password_label)
-        self.password_layout.addWidget(self.password_input)
-        self.password_layout.addWidget(self.checkbox)
 
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.addLayout(self.username_layout)
-        self.layout.addLayout(self.password_layout)
-        self.layout.addWidget(self.button)
-
-        self.setLayout(self.layout)
+        self.setLayout(layout)
 
 
     def password_echo(self, state):
@@ -108,13 +102,16 @@ class LoginLogWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(LoginLogWidget, self).__init__(parent)
 
-        self.layout = QtWidgets.QVBoxLayout()
+        self.layout = QtWidgets.QGridLayout()
         self.setLayout(self.layout)
 
     def add_log(self, log: str):
         log_label = QtWidgets.QLabel(log)
         self.layout.addWidget(log_label)
-
+    
+    def delete_log(self):
+        for i in range(self.layout.count()):
+            self.layout.itemAt(i).widget().deleteLater()
 
 class UserLoginDialog(QtWidgets.QDialog):
 
@@ -137,30 +134,37 @@ class UserLoginDialog(QtWidgets.QDialog):
         self.layout.addWidget(self.central_widget)
         self.setLayout(self.layout)
 
+        self.login_worker.update_status.connect(self.loginlog_widget.add_log)
+        self.login_worker.login_response.connect(self.handle_login_response)
+
         self.exec_()
 
     def btn_user_login(self):
-        
+
         self.central_widget.setCurrentWidget(self.loginlog_widget)
         self.login_worker.user_info = {'loginUser.loginName': self.login_widget.username_input.text(), 'loginUser.loginPassword': self.login_widget.password_input.text()}
-
-        self.login_worker.update_status.connect(self.loginlog_widget.add_log)
-        self.login_worker.login_response.connect(self.handle_login_response)
         self.login_worker.start()
 
     def handle_login_response(self, response: bool):
         if response:
             self.close()
         else:
+            # a cute message box for a failing login
+            QtWidgets.QMessageBox.critical(self, 'Error', 'Login failed.')
+            # delete login logs
+            self.loginlog_widget.delete_log()
             # switch back to login input layout
-            self.login_failed()
             self.central_widget.setCurrentWidget(self.login_widget)
-
-    def login_failed(self):
-        # a cute message box for a fail login
-        QtWidgets.QMessageBox.critical(self, 'Error', 'Login failed.')
-
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     login = UserLoginDialog()
+
+if __name__ == '__main1__':
+    app = QtWidgets.QApplication(sys.argv)
+    dlg = LoginLogWidget()
+    dlg.show()
+    dlg.add_log("qwq")
+    dlg.add_log("qwqqwq")
+    dlg.add_log("qwqqwqqwq")
+    sys.exit(app.exec_())
