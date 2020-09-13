@@ -84,12 +84,10 @@ class LoginWidget(QtWidgets.QWidget):
         layout.addWidget(self.username_input, 0, 1)
         layout.addWidget(self.password_label, 1, 0)
         layout.addWidget(self.password_input, 1, 1)
-        layout.addWidget(self.checkbox, 2, 0)
-        layout.addWidget(self.button, 3, 0, 1, 5)
-
+        layout.addWidget(self.checkbox, 2, 1, QtCore.Qt.AlignRight)
+        layout.addWidget(self.button, 3, 1)
 
         self.setLayout(layout)
-
 
     def password_echo(self, state):
         if state == QtCore.Qt.Checked:
@@ -120,19 +118,23 @@ class UserLoginDialog(QtWidgets.QDialog):
 
         self.login_worker = ABookLogin()
 
-        # Set window
+        # set window
         self.setWindowTitle("ABook Login")
 
+        # two widget
         self.login_widget = LoginWidget(self)
         self.loginlog_widget = LoginLogWidget(self)
 
+        # stack widget
         self.central_widget = QtWidgets.QStackedWidget()
         self.central_widget.addWidget(self.login_widget)
         self.central_widget.addWidget(self.loginlog_widget)
 
+        # set layout
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.central_widget)
         self.setLayout(self.layout)
+
 
         self.login_worker.update_status.connect(self.loginlog_widget.add_log)
         self.login_worker.login_response.connect(self.handle_login_response)
@@ -142,7 +144,7 @@ class UserLoginDialog(QtWidgets.QDialog):
     def btn_user_login(self):
 
         self.central_widget.setCurrentWidget(self.loginlog_widget)
-        self.login_worker.user_info = {'loginUser.loginName': self.login_widget.username_input.text(), 'loginUser.loginPassword': self.login_widget.password_input.text()}
+        self.user_info = {'loginUser.loginName': self.login_widget.username_input.text(), 'loginUser.loginPassword': self.login_widget.password_input.text()}
         self.login_worker.start()
 
     def handle_login_response(self, response: bool):
@@ -159,12 +161,3 @@ class UserLoginDialog(QtWidgets.QDialog):
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     login = UserLoginDialog()
-
-if __name__ == '__main1__':
-    app = QtWidgets.QApplication(sys.argv)
-    dlg = LoginLogWidget()
-    dlg.show()
-    dlg.add_log("qwq")
-    dlg.add_log("qwqqwq")
-    dlg.add_log("qwqqwqqwq")
-    sys.exit(app.exec_())
