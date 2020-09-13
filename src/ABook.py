@@ -7,9 +7,8 @@ import requests
 from PySide2 import QtWidgets
 from PySide2 import QtCore
 from PySide2 import QtGui
-from UserLogin import *
+from UserLogin import UserLoginDialog
 from Settings import Settings
-from OSHandle import *
 from FileDownloader import file_downloader
 
 
@@ -27,8 +26,11 @@ class ABook(object):
         if os.path.exists(self.course_list_path):
             with open(self.course_list_path, 'r', encoding='utf-8') as file:
                 self.course_list = json.load(file)
-        else:
-            self.refresh_course_list()
+        # else:
+        #     self.refresh_course_list()
+
+    def run(self):
+        self.refresh_course_list()
 
     def refresh_course_list(self):
         self.get_courses_info()
@@ -136,19 +138,24 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         self.ListView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.ListView.doubleClicked.connect(self.open_resource)
 
-        list_widget_layout = QtWidgets.QHBoxLayout()
-        list_widget_layout.addWidget(self.TreeWidget)
-        list_widget_layout.addWidget(self.ListView)
-
-        main_layout = QtWidgets.QVBoxLayout()
-        main_layout.addLayout(list_widget_layout)
-        main_layout.addWidget(self.download_button)
-        main_layout.addWidget(self.refresh_button)
-        main_layout.addWidget(self.debug_button)
+        main_layout = QtWidgets.QGridLayout()
+        main_layout.addWidget(self.TreeWidget, 0, 0, 1, 2)
+        main_layout.addWidget(self.ListView, 0, 2, 1, 2)
+        main_layout.addWidget(self.refresh_button, 1, 0, 1, 1)
+        main_layout.addWidget(self.download_button, 1, 1, 1, 1)
+        main_layout.addWidget(self.debug_button, 2, 0, 1, 1)
         self.setLayout(main_layout)
 
-        for index in range(len(self.course_list)):
-            self.create_tree(self.TreeWidget, self.course_list[index], 'course', index)
+        if self.course_list == []:
+            pass
+            # self.refresh_course_list_tree()
+        else:
+            try:
+                for index in range(len(self.course_list)):
+                    self.create_tree(self.TreeWidget, self.course_list[index], 'course', index)
+            except:
+                pass
+                # self.refresh_course_list_tree()
 
     def checkbox_toggled(self, node: QtWidgets.QTreeWidgetItem, column: int):
         if node.checkState(column) == QtCore.Qt.Checked:
@@ -194,7 +201,6 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
                     self.create_tree(tree_item, child_chapter, 'chapter', course_index)
     
     def download_selected(self):
-        print(self.path)
         for item in self.selected_list:
             if item[1] != "None" and item[2] != "None":
                 download_list = self.get_resource_info(item[1], item[2])
@@ -238,6 +244,7 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
     
     def debug(self):
         print(self.selected_list)
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, path, settings, session):
         QtWidgets.QMainWindow.__init__(self)
