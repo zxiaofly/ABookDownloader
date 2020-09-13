@@ -144,7 +144,7 @@ class UserLoginDialog(QtWidgets.QDialog):
     def btn_user_login(self):
 
         self.central_widget.setCurrentWidget(self.loginlog_widget)
-        self.user_info = {'loginUser.loginName': self.login_widget.username_input.text(), 'loginUser.loginPassword': self.login_widget.password_input.text()}
+        self.login_worker.user_info = {'loginUser.loginName': self.login_widget.username_input.text(), 'loginUser.loginPassword': self.login_widget.password_input.text()}
         self.login_worker.start()
 
     def handle_login_response(self, response: bool):
