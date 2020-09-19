@@ -250,15 +250,36 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self)
         course_tree_widget = CourseTreeWidget(path, settings, session)
 
-        main_layout = QtWidgets.QHBoxLayout()
-        main_layout.addWidget(course_tree_widget)
-        
-        main_frame = QtWidgets.QWidget()
-        main_frame.setLayout(main_layout)
-        self.setCentralWidget(main_frame)
+
+        self.statusBar().showMessage('Here is the status bar')
+
+        self.init_menubar()
+
+        self.setCentralWidget(course_tree_widget)
 
         self.setWindowTitle("ABookDownloader Dev")
         self.resize(1920, 1080)
+
+    def init_menubar(self):
+        exitAction = QtWidgets.QAction('Exit', self)
+        exitAction.setShortcut('Alt+F4')
+        exitAction.setStatusTip('Quit')
+        exitAction.triggered.connect(self.close)
+        
+        aboutAction = QtWidgets.QAction('About', self)
+        aboutAction.setStatusTip('About')
+        
+        
+        self.menuBar().setNativeMenuBar(True)
+        fileMenu = self.menuBar().addMenu('About')
+        fileMenu.addAction(exitAction)
+
+        # aboutMenu = self.menuBar().addMenu("&About")
+        aboutQtAct = QtWidgets.QAction("About &Qt", self, triggered=qApp.aboutQt)
+        fileMenu.addAction(aboutQtAct)
+
+    def about_msgbox(self):
+        QtWidgets.QMessageBox()
 
 
 if __name__ == "__main__":
