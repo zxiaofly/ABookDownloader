@@ -9,7 +9,7 @@ from PySide2 import QtCore
 from PySide2 import QtGui
 from UserLogin import UserLoginDialog
 from Settings import Settings
-from FileDownloader import file_downloader
+from FileDownloader import *
 
 
 class ABook(object):
@@ -102,8 +102,8 @@ class ABook(object):
                 if str(chapter["id"]) == chapter_id:
                     chapter_pid = str(chapter["pId"])
                     chapter_name = chapter["name"] + "/" + chapter_name
-        print(self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/' + resource_name)
-        return (self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/', self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/' + resource_name)
+        # print(self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/' + resource_name)
+        return (self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/', self.settings.settings['download_path'] + course_name + '/' + chapter_name + '/' + resource_name, resource_name)
 
     def save_json_to_file(self, path, data):
         with open(path, 'w', encoding='utf-8') as file:
@@ -138,9 +138,11 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         self.ListView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.ListView.doubleClicked.connect(self.open_resource)
 
+        self.fileDownloadWidget = FileDownloaderWidget()
         main_layout = QtWidgets.QGridLayout()
         main_layout.addWidget(self.TreeWidget, 0, 0, 1, 2)
         main_layout.addWidget(self.ListView, 0, 2, 1, 2)
+        main_layout.addWidget(self.fileDownloadWidget, 1, 2, 1, 2)
         main_layout.addWidget(self.refresh_button, 1, 0, 1, 1)
         main_layout.addWidget(self.download_button, 1, 1, 1, 1)
         main_layout.addWidget(self.debug_button, 2, 0, 1, 1)
@@ -204,12 +206,12 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         for item in self.selected_list:
             if item[1] != "None" and item[2] != "None":
                 download_list = self.get_resource_info(item[1], item[2])
-                if download_list == None:
-                    return
-                for resource in download_list:
-                    download_dir, download_path = self.get_resource_path(item[1], item[2], resource["resourceInfoId"], resource["resTitle"], resource["resFileUrl"])
-                    os.system("mkdir \"" + download_dir + "\"")
-                    file_downloader(download_path, "http://abook.hep.com.cn/ICourseFiles/" + resource["resFileUrl"])
+                if download_list != None:
+                    for resource in download_list:
+                        download_dir, download_path, file_name = self.get_resource_path(item[1], item[2], resource["resourceInfoId"], resource["resTitle"], resource["resFileUrl"])
+                        if os.path.exists(download_dir) == False:
+                            os.system("mkdir \"" + download_dir + "\"")
+                        self.fileDownloadWidget.addDownloadTask(file_name, download_path, "http://abook.hep.com.cn/ICourseFiles/" + resource["resFileUrl"])
                     
     
     def refresh_course_list_tree(self):
@@ -224,18 +226,19 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         if course_id != "None" and chapter_id != "None":
             resource_list = self.get_resource_info(course_id, chapter_id)
             self.resource_list.clear()
-            for resource in resource_list:
-                res_name = resource["resTitle"]
-                url_base = "http://abook.hep.com.cn/ICourseFiles/"
-                res_file_url = url_base + resource["resFileUrl"]
-                res_logo_url = url_base + resource["picUrl"]
-                logo = requests.get(res_logo_url).content
-                res_logo = QtGui.QImage()
-                res_logo.loadFromData(logo)
-                resource_item = QtGui.QStandardItem(res_name)
-                resource_item.setData(res_logo, QtCore.Qt.DecorationRole)
-                resource_item.setData(res_file_url, QtCore.Qt.ToolTipRole)
-                self.resource_list.appendRow(resource_item)
+            if isinstance(resource_list, list):
+                for resource in resource_list:
+                    res_name = resource["resTitle"]
+                    url_base = "http://abook.hep.com.cn/ICourseFiles/"
+                    res_file_url = url_base + resource["resFileUrl"]
+                    res_logo_url = url_base + resource["picUrl"]
+                    logo = requests.get(res_logo_url).content
+                    res_logo = QtGui.QImage()
+                    res_logo.loadFromData(logo)
+                    resource_item = QtGui.QStandardItem(res_name)
+                    resource_item.setData(res_logo, QtCore.Qt.DecorationRole)
+                    resource_item.setData(res_file_url, QtCore.Qt.ToolTipRole)
+                    self.resource_list.appendRow(resource_item)
 
     def open_resource(self):
         item = self.resource_list.itemFromIndex(self.sender().currentIndex())
