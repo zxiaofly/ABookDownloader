@@ -28,6 +28,7 @@ class FileDownloaderWidget(QWidget):
         self.createTable() 
 
         self.layout = QVBoxLayout() 
+        self.layout.setMargin(0)
         self.layout.addWidget(self.tableWidget) 
         self.layout.addWidget(self.startDownloadButton)
         self.layout.addWidget(self.clearDownloadListButton)
@@ -40,9 +41,9 @@ class FileDownloaderWidget(QWidget):
         self.tableWidget.setRowCount(0)
         self.tableWidget.setHorizontalHeaderItem(0, QTableWidgetItem("File Name"))
         self.tableWidget.setHorizontalHeaderItem(1, QTableWidgetItem("Progress Bar"))
-        self.tableWidget.setHorizontalHeaderItem(2, QTableWidgetItem("Download Speed"))
-        self.tableWidget.setHorizontalHeaderItem(3, QTableWidgetItem("Download Status"))
-        self.tableWidget.setHorizontalHeaderItem(4, QTableWidgetItem("Download Url"))
+        self.tableWidget.setHorizontalHeaderItem(2, QTableWidgetItem("Speed"))
+        self.tableWidget.setHorizontalHeaderItem(3, QTableWidgetItem("Status"))
+        self.tableWidget.setHorizontalHeaderItem(4, QTableWidgetItem("Url"))
         self.tableWidget.setHorizontalHeaderItem(5, QTableWidgetItem("File Path"))
         #Table will fit the screen horizontally 
         self.tableWidget.horizontalHeader().setStretchLastSection(True) 
@@ -66,6 +67,7 @@ class FileDownloaderWidget(QWidget):
         progressBar = QProgressBar()
         progressBar.setMinimum(0)
         progressBar.setMaximum(100)
+        progressBar.setValue(0)
         progressBar.setAlignment(Qt.AlignCenter)
         progressBar.setFormat(str(progressBar.value()) + " %")
 
@@ -124,7 +126,7 @@ class DownloadWorker(QThread):
         self.signals.download_speed.connect(parent.update_download_speed)
         self.signals.download_status.connect(parent.update_download_status)
         self.signals.download_next.connect(parent.start_download)
-        parent.signals.cancel_download.connect(self.exit)
+        parent.signals.cancel_download.connect(self.terminate)
 
     def run(self):
         self.signals.download_status.emit([self.row, "Downloading"])

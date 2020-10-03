@@ -138,14 +138,21 @@ class CourseTreeWidget(QtWidgets.QWidget, ABook):
         self.ListView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.ListView.doubleClicked.connect(self.open_resource)
 
+
+        tree_view = QTreeView()
+        filesystem_model = QFileSystemModel(tree_view)
+        filesystem_model.setRootPath(QDir.currentPath())
+        tree_view.setModel(filesystem_model)
+
         self.fileDownloadWidget = FileDownloaderWidget()
         main_layout = QtWidgets.QGridLayout()
         main_layout.addWidget(self.TreeWidget, 0, 0, 1, 2)
         main_layout.addWidget(self.ListView, 0, 2, 1, 2)
+        main_layout.addWidget(tree_view, 1, 0, 1, 2)
         main_layout.addWidget(self.fileDownloadWidget, 1, 2, 1, 2)
-        main_layout.addWidget(self.refresh_button, 1, 0, 1, 1)
-        main_layout.addWidget(self.download_button, 1, 1, 1, 1)
-        main_layout.addWidget(self.debug_button, 2, 0, 1, 1)
+        main_layout.addWidget(self.refresh_button, 2, 0, 1, 1)
+        main_layout.addWidget(self.download_button, 3, 0, 1, 1)
+        main_layout.addWidget(self.debug_button, 4, 0, 1, 1)
         self.setLayout(main_layout)
 
         if self.course_list == []:
@@ -286,6 +293,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
+    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app = QtWidgets.QApplication(os.sys.argv)
     user = UserLoginDialog()
     settings = Settings('./temp/settings.json')
