@@ -24,12 +24,14 @@ class FileDownloaderWidget(QWidget):
         self.startDownloadButton.clicked.connect(self.start_download)
         self.clearDownloadListButton = QPushButton("Clear List")
         self.clearDownloadListButton.clicked.connect(self.clear_download_list)
-
+        self.hideFinishedCheckBox = QCheckBox("Hide Finished")
+        self.hideFinishedCheckBox.toggled.connect(self.hide_finished)
         self.createTable() 
 
         self.layout = QVBoxLayout() 
         self.layout.setMargin(0)
         self.layout.addWidget(self.tableWidget) 
+        self.layout.addWidget(self.hideFinishedCheckBox)
         self.layout.addWidget(self.startDownloadButton)
         self.layout.addWidget(self.clearDownloadListButton)
         self.setLayout(self.layout) 
@@ -96,6 +98,15 @@ class FileDownloaderWidget(QWidget):
         self.task_list.clear()
         self.signals.cancel_download.emit()
 
+    def hide_finished(self):
+        if self.hideFinishedCheckBox.isChecked():
+            for row in range(0, self.tableWidget.rowCount()):
+                if self.tableWidget.item(row, 3).text() == "Done":
+                    self.tableWidget.hideRow(row)
+        else:
+            for row in range(0, self.tableWidget.rowCount()):
+                self.tableWidget.showRow(row)
+
     @Slot(list)
     def update_progress_bar(self, message):
         row = message[0]
@@ -126,6 +137,7 @@ class DownloadWorker(QThread):
         self.signals.download_speed.connect(parent.update_download_speed)
         self.signals.download_status.connect(parent.update_download_status)
         self.signals.download_next.connect(parent.start_download)
+        self.signals.download_next.connect(parent.hide_finished)
         parent.signals.cancel_download.connect(self.terminate)
 
     def run(self):
